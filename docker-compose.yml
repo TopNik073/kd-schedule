@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  app:
+     build: .
+     container_name: app-kd-container
+     restart: unless-stopped
+     environment:
+       - DB_HOST=db
+       - DB_USER=${DB_USER}
+       - DB_PASS=${DB_PASS}
+       - DB_PORT=5432
+       - DB_NAME=${DB_NAME}
+       - LOG_FILE=/app/logs/app.log
+     ports:
+       - "8000:8000"
+     depends_on:
+       - db
+     volumes:
+       - .:/app:ro
+       - ./logs:/app/logs
+     networks:
+       - app_network
+
+  db:
+    image: postgres:17.2
+    container_name: db-kd-container
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+  app_logs:
+
+networks:
+  app_network:
+    driver: bridge
