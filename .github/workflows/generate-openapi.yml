@@ -25,7 +25,6 @@ jobs:
           pip install -r requirements.txt
       - name: Generate OpenAPI docs
         run: |
-          export PYTHONPATH=$PYTHONPATH:$(pwd)
           python scripts/generate_openapi.py
       - name: Check generated files
         run: |

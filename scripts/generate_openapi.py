@@ -1,4 +1,5 @@
 import os
+import sys
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,12 +10,14 @@ os.environ.setdefault("DB_HOST", "db_host")
 os.environ.setdefault("DB_PORT", "5432")
 os.environ.setdefault("DB_NAME", "db_name")
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from src.main import app
 import json
 import yaml
 
 
-def generate_openapi_spec(path: str = "../docs/", name: str = "openapi", ext: str = "yaml"):
+def generate_openapi_spec(path: str = "./docs/", name: str = "openapi", ext: str = "yaml"):
     """
     Generate an OpenAPI specification file.
     """
