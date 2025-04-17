@@ -1,0 +1,374 @@
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
+    SGetNextTakingsResponse:
+      properties:
+        end_date:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          description: timezone is always UTC
+          title: End Date
+        frequency:
+          exclusiveMinimum: 0.0
+          title: Frequency
+          type: integer
+        medicine_name:
+          minLength: 1
+          title: Medicine Name
+          type: string
+        next_taking_time:
+          format: date-time
+          title: Next Taking Time
+          type: string
+        start_date:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          description: timezone is always UTC
+          title: Start Date
+      required:
+      - medicine_name
+      - frequency
+      - next_taking_time
+      title: SGetNextTakingsResponse
+      type: object
+    SGetScheduleResponse:
+      properties:
+        end_date:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          description: timezone is always UTC
+          title: End Date
+        frequency:
+          exclusiveMinimum: 0.0
+          title: Frequency
+          type: integer
+        medicine_name:
+          minLength: 1
+          title: Medicine Name
+          type: string
+        start_date:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          description: timezone is always UTC
+          title: Start Date
+      required:
+      - medicine_name
+      - frequency
+      title: SGetScheduleResponse
+      type: object
+    SScheduleCreateRequest:
+      properties:
+        duration:
+          anyOf:
+          - format: duration
+            type: string
+          - type: 'null'
+          title: Duration
+        end_date:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          description: timezone is always UTC
+          title: End Date
+        frequency:
+          exclusiveMinimum: 0.0
+          title: Frequency
+          type: integer
+        medicine_name:
+          minLength: 1
+          title: Medicine Name
+          type: string
+        medicine_policy:
+          exclusiveMinimum: 0.0
+          title: Medicine Policy
+          type: integer
+        name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Name
+        start_date:
+          anyOf:
+          - format: date-time
+            type: string
+          - type: 'null'
+          description: timezone is always UTC
+          title: Start Date
+      required:
+      - medicine_policy
+      - medicine_name
+      - frequency
+      title: SScheduleCreateRequest
+      type: object
+    SScheduleCreateResponse:
+      properties:
+        id:
+          format: uuid
+          title: Id
+          type: string
+      required:
+      - id
+      title: SScheduleCreateResponse
+      type: object
+    SuccessResponseSchema_SGetScheduleResponse_:
+      properties:
+        data:
+          $ref: '#/components/schemas/SGetScheduleResponse'
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+        success:
+          default: true
+          title: Success
+          type: boolean
+      required:
+      - data
+      title: SuccessResponseSchema[SGetScheduleResponse]
+      type: object
+    SuccessResponseSchema_SScheduleCreateResponse_:
+      properties:
+        data:
+          $ref: '#/components/schemas/SScheduleCreateResponse'
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+        success:
+          default: true
+          title: Success
+          type: boolean
+      required:
+      - data
+      title: SuccessResponseSchema[SScheduleCreateResponse]
+      type: object
+    SuccessResponseSchema_list_SGetNextTakingsResponse__:
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/SGetNextTakingsResponse'
+          title: Data
+          type: array
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+        success:
+          default: true
+          title: Success
+          type: boolean
+      required:
+      - data
+      title: SuccessResponseSchema[list[SGetNextTakingsResponse]]
+      type: object
+    SuccessResponseSchema_list_UUID__:
+      properties:
+        data:
+          items:
+            format: uuid
+            type: string
+          title: Data
+          type: array
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+        success:
+          default: true
+          title: Success
+          type: boolean
+      required:
+      - data
+      title: SuccessResponseSchema[list[UUID]]
+      type: object
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+      type: object
+info:
+  title: kd-schedule
+  version: 0.1.0
+openapi: 3.1.0
+paths:
+  /api/v1/next_takings:
+    get:
+      description: 'Get next takings for a user.
+
+        If next_takings is provided, it will use it instead of the default value from
+        the config.'
+      operationId: get_next_takings_api_v1_next_takings_get
+      parameters:
+      - description: medicine policy number of user
+        in: query
+        name: user_id
+        required: true
+        schema:
+          description: medicine policy number of user
+          exclusiveMinimum: 0
+          title: User Id
+          type: integer
+      - description: Optional manual next_taking interval
+        in: query
+        name: next_takings
+        required: false
+        schema:
+          default: PT1H
+          description: Optional manual next_taking interval
+          format: duration
+          title: Next Takings
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema_list_SGetNextTakingsResponse__'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Next Takings
+      tags:
+      - schedule
+  /api/v1/schedule:
+    get:
+      description: Get a schedule by id.
+      operationId: get_schedule_api_v1_schedule_get
+      parameters:
+      - description: medicine policy number of user
+        in: query
+        name: user_id
+        required: true
+        schema:
+          description: medicine policy number of user
+          exclusiveMinimum: 0
+          title: User Id
+          type: integer
+      - description: schedule unique UUID
+        in: query
+        name: schedule_id
+        required: true
+        schema:
+          description: schedule unique UUID
+          format: uuid
+          title: Schedule Id
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema_SGetScheduleResponse_'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Schedule
+      tags:
+      - schedule
+    post:
+      description: 'Create a new schedule for a user. If user is not registered, it
+        will be registered first.
+
+        If end_time and duration are provided, it will use end_time.
+
+        If only duration is provided, it will use current time + duration.
+
+        If start_date is provided, it will use start_date.'
+      operationId: create_schedule_api_v1_schedule_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SScheduleCreateRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema_SScheduleCreateResponse_'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Create Schedule
+      tags:
+      - schedule
+  /api/v1/schedules:
+    get:
+      description: Get all schedules ids for a user.
+      operationId: get_schedules_ids_api_v1_schedules_get
+      parameters:
+      - description: medicine policy number of user
+        in: query
+        name: user_id
+        required: true
+        schema:
+          description: medicine policy number of user
+          exclusiveMinimum: 0
+          title: User Id
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseSchema_list_UUID__'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Schedules Ids
+      tags:
+      - schedule
