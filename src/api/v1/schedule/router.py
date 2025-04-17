@@ -1,6 +1,6 @@
 from datetime import timedelta
 from typing import TYPE_CHECKING
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from src.core.logging import get_logger
 from src.core.config import settings
