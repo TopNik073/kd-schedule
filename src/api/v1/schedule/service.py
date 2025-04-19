@@ -61,19 +61,18 @@ class ScheduleService:
 
             if not end_date and create_schedule_dto.duration:
                 end_date = start_date + create_schedule_dto.duration
-                end_date = end_date.replace(tzinfo=timezone.utc)
-                if not (settings.MORNING_HOUR <= end_date.hour <= settings.EVENING_HOUR):
-                    raise ValueError(
-                        f"End time (based on duration) must be between {settings.MORNING_HOUR}:00 and {settings.EVENING_HOUR}:00"
-                    )
             elif end_date:
-                end_date = end_date.replace(tzinfo=timezone.utc)
-                if not (settings.MORNING_HOUR <= end_date.hour <= settings.EVENING_HOUR):
-                    raise ValueError(
-                        f"End time must be between {settings.MORNING_HOUR}:00 and {settings.EVENING_HOUR}:00"
-                    )
+                pass
             else:
                 raise ValueError("Either end_date or duration must be provided")
+
+            end_date = end_date.replace(tzinfo=timezone.utc)
+            if end_date < start_date:
+                raise ValueError("End date must be greater than start date")
+            if not (settings.MORNING_HOUR <= end_date.hour <= settings.EVENING_HOUR):
+                raise ValueError(
+                    f"End time must be between {settings.MORNING_HOUR}:00 and {settings.EVENING_HOUR}:00 (provided: {end_date.strftime('%Y-%m-%d %H:%M:%S')})"
+                )
 
             schedule: "Schedules" = await self._schedule_repo.create(
                 SScheduleCreate(
@@ -107,7 +106,7 @@ class ScheduleService:
 
     async def get_schedule_by_id(self, medicine_policy: int, schedule_id: UUID) -> "Schedules":
         user_schedules: list["Schedules"] = await self.get_schedules_by_policy(medicine_policy)
-        schedule = [sch for sch in user_schedules if sch.id == schedule_id]
+        schedule = [sch for sch in user_schedules if str(sch.id) == str(schedule_id)]
         if len(schedule) != 1:
             raise HTTPException(404, f"Schedule with id {schedule_id} not found")
 
@@ -116,15 +115,15 @@ class ScheduleService:
     async def get_next_takings(
         self,
         medicine_policy: int,
-        next_takings_interval: timedelta = settings.NEXT_TAKING_TIMING,
+        next_takings_interval: timedelta | None = settings.NEXT_TAKING_TIMING,
     ) -> list[dict[str, "Schedules"]]:
         user_schedules: list["Schedules"] = await self.get_schedules_by_policy(medicine_policy)
-        return find_next_takings(user_schedules, next_takings_interval)
+        return find_next_takings(user_schedules, next_takings_interval if next_takings_interval else settings.NEXT_TAKING_TIMING)
 
     async def get_next_takings_with_model(
-        self, medicine_policy: int, next_takings_interval: timedelta = settings.NEXT_TAKING_TIMING
+        self, medicine_policy: int, next_takings_interval: timedelta | None = settings.NEXT_TAKING_TIMING
     ) -> list[SGetNextTakingsResponse]:
-        next_takings = await self.get_next_takings(medicine_policy, next_takings_interval)
+        next_takings = await self.get_next_takings(medicine_policy, next_takings_interval if next_takings_interval else settings.NEXT_TAKING_TIMING)
         return [
             SGetNextTakingsResponse(
                 medicine_name=taking["schedule"].medicine_name,
