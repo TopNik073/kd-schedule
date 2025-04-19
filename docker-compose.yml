@@ -14,6 +14,7 @@ services:
        - LOG_FILE=/app/logs/app.log
      ports:
        - "8000:8000"
+       - "50051:50051"
      depends_on:
        - db
      volumes:
