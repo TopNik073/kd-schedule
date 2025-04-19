@@ -10,7 +10,6 @@ from .dependencies import get_schedule_service
 from .schemas import (
     SScheduleCreateRequest,
     SScheduleCreateResponse,
-    SGetSchedulesResponse,
     SGetScheduleResponse,
     SGetNextTakingsResponse,
 )
