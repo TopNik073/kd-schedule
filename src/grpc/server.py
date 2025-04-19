@@ -1,5 +1,8 @@
 import grpc
 
+from src.grpc.schedule_pb2_grpc import add_ScheduleServiceServicer_to_server
+from src.grpc.servicers.schedule_servicer import ScheduleServicer
+
 from src.core.logging import get_logger
 from src.grpc.interceptors import LoggingInterceptor
 
@@ -10,6 +13,11 @@ class GRPCServer:
     def __init__(self, port: int):
         self.port = port
         self.server = grpc.aio.server(interceptors=[LoggingInterceptor()])
+        self.setup_services()
+
+    def setup_services(self):
+        schedule_service = ScheduleServicer()
+        add_ScheduleServiceServicer_to_server(schedule_service, self.server)
 
     async def start(self):
         self.server.add_insecure_port(f"[::]:{self.port}")
