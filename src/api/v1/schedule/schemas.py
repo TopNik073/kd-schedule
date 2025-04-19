@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from uuid import UUID
-from pydantic import BaseModel, Field, field_validator, ValidationInfo
+from pydantic import BaseModel, ConfigDict, Field, field_validator, ValidationInfo
 
 
 # ---BASE SCHEMAS---
@@ -31,6 +31,8 @@ class SScheduleBase(BaseModel):
         duration = info.data.get("duration")
         if value is None:
             return value
+        if value.year == 1970:
+            value = None
         if duration is not None and value is not None:
             raise ValueError("Only one of end_date or duration can be provided")
         return value
@@ -51,7 +53,7 @@ class SScheduleCreate(BaseModel):
 
 
 class SScheduleCreateRequest(SScheduleBase, SUserBase):
-    pass
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SScheduleCreateResponse(BaseModel):
@@ -65,15 +67,12 @@ class SGetSchedulesResponse(BaseModel):
 
 # ---GET USER SCHEDULE---
 class SGetScheduleResponse(SScheduleBase):
+    model_config = ConfigDict(from_attributes=True)
+
     duration: timedelta | None = Field(None, exclude=True)
-
-    class Config:
-        from_attributes = True
-
 
 # ---GET NEXT TAKINGS---
 class SGetNextTakingsResponse(SGetScheduleResponse):
-    next_taking_time: datetime
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        from_attributes = True
+    next_taking_time: datetime

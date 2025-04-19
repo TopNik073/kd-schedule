@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package schedule;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+service ScheduleService {
+  rpc CreateSchedule(CreateScheduleRequest) returns (CreateScheduleResponse);
+  
+  rpc GetSchedulesIds(GetSchedulesIdsRequest) returns (GetSchedulesIdsResponse);
+  
+  rpc GetSchedule(GetScheduleRequest) returns (GetScheduleResponse);
+  
+  rpc GetNextTakings(GetNextTakingsRequest) returns (GetNextTakingsResponse);
+}
+
+message CreateScheduleRequest {
+  optional string name = 1;
+  int32 medicine_policy = 2;
+  string medicine_name = 3;
+  int32 frequency = 4;
+  optional google.protobuf.Timestamp start_date = 5;
+  optional google.protobuf.Timestamp end_date = 6;
+  optional google.protobuf.Duration duration = 7;
+}
+
+message CreateScheduleResponse {
+  string id = 1;
+}
+
+message GetSchedulesIdsRequest {
+  int32 user_id = 1;
+}
+
+message GetSchedulesIdsResponse {
+  repeated string schedule_ids = 1;
+}
+
+message GetScheduleRequest {
+  int32 user_id = 1;
+  string schedule_id = 2;
+}
+
+message ScheduleInfo {
+  string medicine_name = 1;
+  int32 frequency = 2;
+  optional google.protobuf.Timestamp start_date = 3;
+  optional google.protobuf.Timestamp end_date = 4;
+}
+
+message GetScheduleResponse {
+  ScheduleInfo schedule = 1;
+}
+
+message GetNextTakingsRequest {
+  int32 user_id = 1;
+  optional google.protobuf.Duration next_takings_interval = 2;
+}
+
+message NextTakingInfo {
+  ScheduleInfo schedule_info = 1;
+  google.protobuf.Timestamp next_taking_time = 2;
+}
+
+message GetNextTakingsResponse {
+  repeated NextTakingInfo takings = 1;
+}
