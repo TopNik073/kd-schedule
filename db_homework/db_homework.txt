@@ -1,0 +1,138 @@
+Задание №2
+
+CREATE TABLE developers (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	name TEXT NOT NULL,
+	department TEXT NOT NULL,
+	geolocation POINT NOT NULL,
+	last_known_ip INET NOT NULL,
+	is_available BOOLEAN DEFAULT FALSE
+)
+
+
+
+
+
+Задание №3
+
+Решил сразу написать скрипт, файл в этой же директории. (Называется exc_3.sql)
+
+
+
+
+
+Задание №4
+
+1. EXPLAIN SELECT * FROM developers WHERE name LIKE 'James%';
+	Seq Scan on developers  (cost=0.00..24.50 rows=216 width=60)
+		Filter: (name ~~ 'James%'::text)
+
+2. EXPLAIN SELECT * FROM developers WHERE department = 'backend';
+	Seq Scan on developers  (cost=0.00..24.50 rows=272 width=60)
+		Filter: (department = 'backend'::text)
+
+3. EXPLAIN SELECT * FROM developers WHERE last_known_ip = '192.168.1.10';
+	Seq Scan on developers  (cost=0.00..24.50 rows=1 width=60)
+		Filter: (last_known_ip = '192.168.1.10'::inet)
+
+4. EXPLAIN SELECT * FROM developers WHERE is_available = TRUE;
+	Seq Scan on developers  (cost=0.00..22.00 rows=312 width=60)
+		Filter: is_available
+
+5. Запрос со *
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+CREATE OR REPLACE FUNCTION get_distance(IN geolocation POINT) RETURNS DOUBLE PRECISION AS $$
+BEGIN
+	RETURN ST_Distance(
+        ST_SetSRID(ST_Point(geolocation[0], geolocation[1]), 4326)::geography,
+        ST_SetSRID(ST_Point(54.71101449097041, 20.457663545267668), 4326)::geography
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT 
+    id, 
+    name, 
+    department,
+    geolocation,
+	is_available,
+	round(get_distance(geolocation)) as distance_meters
+FROM 
+    developers
+WHERE 
+    get_distance(geolocation) <= 10000;
+
+
+
+
+
+Задание №5
+
+- id
+	индекс есть по умолчанию для поля primary key (тип b-tree)
+	Результат:
+		Index Scan using developers_pkey on developers  (cost=0.28..8.29 rows=1 width=60)
+			Index Cond: (id = '7448b074-d579-466d-b910-ebb7e80c0401'::uuid)
+
+- name
+	Можно использовать или b-tree, для поиска с префиксом (как в примере) или индекс триграмм (обеспечит поиск по частичному и неполному совпадению)
+	Вариант 1 (триграммы):
+		Создание:
+			CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+			CREATE INDEX trgm_name_idx ON developers USING GIN (name gin_trgm_ops)
+		Результат:
+			Seq Scan on developers  (cost=0.00..24.50 rows=216 width=60) (поиск выполнился без использования индекса)
+				Filter: (name ~~ 'James%'::text)
+	
+	Вариант 2 (b-tree):
+		Создание:
+			CREATE INDEX idx_developers_name ON developers (name);
+		
+		Результат:
+			Seq Scan on developers  (cost=0.00..24.50 rows=216 width=60) (поиск снова выполнился без использования индекса)
+				Filter: (name ~~ 'James%'::text)
+
+- department
+	Лучше использовать hash индекс, так как значения для этого поля заранее известны и ограничены
+	Создание:
+		CREATE INDEX idx_developers_department ON developers USING HASH (department);
+
+	Результат:
+		Seq Scan on developers  (cost=0.00..24.50 rows=272 width=60)
+			Filter: (department = 'backend'::text)
+
+- geolocation
+	Использую GIST, так как в теории он эффективнее всех справится с геоданными
+	Создание:
+		CREATE INDEX idx_developers_geolocation ON developers USING GIST (geolocation)
+
+	Результат:
+		Seq Scan on developers  (cost=0.00..358.58 rows=333 width=61)
+			Filter: (get_distance(geolocation) <= '10000'::double precision)
+
+
+- last_known_ip
+	Использую HASH индекс, так как при поиске придётся находить точные совпадения
+	Создание:
+		CREATE INDEX idx_developers_ip ON developers USING HASH (last_known_ip)
+	
+	Результат:
+		Index Scan using idx_developers_ip on developers  (cost=0.00..8.02 rows=1 width=60)
+			Index Cond: (last_known_ip = '192.168.1.10'::inet)
+
+- is_available
+	Использую b-tree (записи изначально были разделены так, что примерно у 30% это поле истинно)
+	Создание:
+		CREATE INDEX idx_developers_is_available ON developers (is_available)
+
+	Результат:
+		Bitmap Heap Scan on developers  (cost=6.57..21.69 rows=312 width=60)
+			Recheck Cond: is_available
+			->  Bitmap Index Scan on idx_developers_is_available  (cost=0.00..6.49 rows=312 width=0)
+				Index Cond: (is_available = true)
+
+Вывод: в некоторых ситуациях индексы действительно помогают и планировщик их использует, а в некоторых они создадут дополнительные 
+накладные на их содержание и обновление. Для того, чтобы понять где индекс необходим нужно пользоваться командой EXPLAIN и 
+анализировтаь её результаты
