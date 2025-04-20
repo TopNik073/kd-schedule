@@ -14,8 +14,8 @@ CREATE TABLE developers (
 
 
 Задание №3
-
-Решил сразу написать скрипт, файл в этой же директории. (Называется exc_3.sql)
+Решил сразу написать скрипт, файл в этой же директории. 
+https://github.com/TopNik073/kd-schedule/blob/main/db_homework/exc_3.sql
 
 
 
