@@ -1,0 +1,43 @@
+name: Generate schemas from OpenAPI (docs/openapi.yaml)
+
+on:
+  push:
+    paths:
+      - 'docs/openapi.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install datamodel-code-generator
+          
+      - name: Generate models from OpenAPI
+        run: |
+          datamodel-codegen --input docs/openapi.yaml --output src/api/v1/schedule/schemas/generated_schemas.py
+          
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update generated schemas from OpenAPI"
+          title: "Update generated schemas from OpenAPI"
+          branch: update-schemas-${{ github.run_id }}
+          base: main
+          labels: |
+            automated-pr
+            openapi-update
