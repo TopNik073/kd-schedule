@@ -79,7 +79,14 @@ async def get_schedule(
     """
     try:
         schedule = await schedule_service.get_schedule_by_id(user_id, schedule_id)
-        return SuccessResponseSchema(data=SGetScheduleResponse.model_validate(schedule))
+        return SuccessResponseSchema(
+            data=SGetScheduleResponse(
+                medicine_name=schedule.medicine_name,
+                frequency=schedule.frequency,
+                start_date=schedule.start_date,
+                end_date=schedule.end_date,
+            )
+        )
     except ValueError as e:
         logger.exception(f"Validation error", exc_info=e)
         raise HTTPException(status_code=400, detail=str(e))

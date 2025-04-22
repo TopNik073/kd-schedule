@@ -1,17 +1,16 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
-from datetime import datetime, timezone, UTC, timedelta, tzinfo
+from datetime import datetime, timezone, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.config import settings
 from src.repositories import UserRepository, ScheduleRepository
 
 from src.api.v1.schedule.schemas import (
     SScheduleCreateRequest,
-    SUserBase,
-    SScheduleCreate,
     SGetNextTakingsResponse,
+    SScheduleCreate,
+    SUserCreate,
 )
 from src.api.v1.schedule.utils import round_to_multiple, round_to_multiple_dt, find_next_takings
 from src.core.logging import get_logger
@@ -39,7 +38,7 @@ class ScheduleService:
             )
             if user is None:
                 user: "Users" = await self._user_repo.create(
-                    SUserBase(
+                    SUserCreate(
                         name=create_schedule_dto.name,
                         medicine_policy=create_schedule_dto.medicine_policy,
                     )
@@ -58,6 +57,10 @@ class ScheduleService:
                 )
 
             end_date = create_schedule_dto.end_date
+
+            if end_date and end_date.year == 1970:
+                # Special for gRPC
+                end_date = None
 
             if not end_date and create_schedule_dto.duration:
                 end_date = start_date + create_schedule_dto.duration
@@ -118,12 +121,20 @@ class ScheduleService:
         next_takings_interval: timedelta | None = settings.NEXT_TAKING_TIMING,
     ) -> list[dict[str, "Schedules"]]:
         user_schedules: list["Schedules"] = await self.get_schedules_by_policy(medicine_policy)
-        return find_next_takings(user_schedules, next_takings_interval if next_takings_interval else settings.NEXT_TAKING_TIMING)
+        return find_next_takings(
+            user_schedules,
+            next_takings_interval if next_takings_interval else settings.NEXT_TAKING_TIMING,
+        )
 
     async def get_next_takings_with_model(
-        self, medicine_policy: int, next_takings_interval: timedelta | None = settings.NEXT_TAKING_TIMING
+        self,
+        medicine_policy: int,
+        next_takings_interval: timedelta | None = settings.NEXT_TAKING_TIMING,
     ) -> list[SGetNextTakingsResponse]:
-        next_takings = await self.get_next_takings(medicine_policy, next_takings_interval if next_takings_interval else settings.NEXT_TAKING_TIMING)
+        next_takings = await self.get_next_takings(
+            medicine_policy,
+            next_takings_interval if next_takings_interval else settings.NEXT_TAKING_TIMING,
+        )
         return [
             SGetNextTakingsResponse(
                 medicine_name=taking["schedule"].medicine_name,
