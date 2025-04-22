@@ -23,7 +23,6 @@ components:
           title: Frequency
           type: integer
         medicine_name:
-          minLength: 1
           title: Medicine Name
           type: string
         next_taking_time:
@@ -57,7 +56,6 @@ components:
           title: Frequency
           type: integer
         medicine_name:
-          minLength: 1
           title: Medicine Name
           type: string
         start_date:
@@ -92,7 +90,6 @@ components:
           title: Frequency
           type: integer
         medicine_name:
-          minLength: 1
           title: Medicine Name
           type: string
         medicine_policy:
