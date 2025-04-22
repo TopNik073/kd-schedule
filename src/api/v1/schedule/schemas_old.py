@@ -71,6 +71,7 @@ class SGetScheduleResponse(SScheduleBase):
 
     duration: timedelta | None = Field(None, exclude=True)
 
+
 # ---GET NEXT TAKINGS---
 class SGetNextTakingsResponse(SGetScheduleResponse):
     model_config = ConfigDict(from_attributes=True)
