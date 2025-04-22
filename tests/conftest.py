@@ -3,7 +3,7 @@ import asyncio
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock
 
-from src.grpc.server import GRPCServer
+# from src.grpc.server import GRPCServer
 
 from tests.models import UserTest, MedicineTest
 
@@ -16,6 +16,7 @@ from tests.models import UserTest, MedicineTest
 #     yield server
 #     print("GRPC Server stopped")
 #     await server.stop()
+
 
 @pytest.fixture(scope="session")
 def grpc_context():
