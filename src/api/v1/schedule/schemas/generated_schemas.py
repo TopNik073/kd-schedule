@@ -4,10 +4,34 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel, Field, PositiveInt
+
+
+class ResponseSchema(BaseModel):
+    success: bool = Field(..., title='Success')
+    error: Optional[str] = Field(None, title='Error')
+
+
+class SuccessResponseSchema(ResponseSchema):
+    success: Optional[bool] = True
+
+
+class ErrorResponseSchema(ResponseSchema):
+    success: Optional[bool] = False
+    data: Optional[Any] = None
+
+
+class SuccessResponseListUUID(SuccessResponseSchema):
+    data: List[UUID] = Field(..., title='Data')
+
+
+class ValidationError(BaseModel):
+    loc: List[Union[str, int]] = Field(..., title='Location')
+    msg: str = Field(..., title='Message')
+    type: str = Field(..., title='Error Type')
 
 
 class SGetNextTakingsResponse(BaseModel):
@@ -51,34 +75,16 @@ class SScheduleCreateResponse(BaseModel):
     id: UUID = Field(..., title='Id')
 
 
-class SuccessResponseSchemaSGetScheduleResponse(BaseModel):
+class SuccessResponseSGetScheduleResponse(SuccessResponseSchema):
     data: SGetScheduleResponse
-    error: Optional[str] = Field(None, title='Error')
-    success: Optional[bool] = Field(True, title='Success')
 
 
-class SuccessResponseSchemaSScheduleCreateResponse(BaseModel):
+class SuccessResponseSScheduleCreateResponse(SuccessResponseSchema):
     data: SScheduleCreateResponse
-    error: Optional[str] = Field(None, title='Error')
-    success: Optional[bool] = Field(True, title='Success')
 
 
-class SuccessResponseSchemaListSGetNextTakingsResponse(BaseModel):
+class SuccessResponseListSGetNextTakingsResponse(SuccessResponseSchema):
     data: List[SGetNextTakingsResponse] = Field(..., title='Data')
-    error: Optional[str] = Field(None, title='Error')
-    success: Optional[bool] = Field(True, title='Success')
-
-
-class SuccessResponseSchemaListUUID(BaseModel):
-    data: List[UUID] = Field(..., title='Data')
-    error: Optional[str] = Field(None, title='Error')
-    success: Optional[bool] = Field(True, title='Success')
-
-
-class ValidationError(BaseModel):
-    loc: List[Union[str, int]] = Field(..., title='Location')
-    msg: str = Field(..., title='Message')
-    type: str = Field(..., title='Error Type')
 
 
 class HTTPValidationError(BaseModel):
