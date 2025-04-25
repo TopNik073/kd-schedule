@@ -7,6 +7,10 @@ from src.api.v1.schedule.schemas.generated_schemas import (
     SScheduleCreateResponse,
     SGetScheduleResponse,
     SGetNextTakingsResponse,
+    SuccessResponseSScheduleCreateResponse,
+    SuccessResponseSGetScheduleResponse,
+    SuccessResponseListUUID,
+    SuccessResponseListSGetNextTakingsResponse,
 )
 
 
@@ -30,4 +34,8 @@ __all__ = [
     "SScheduleCreateResponse",
     "SGetScheduleResponse",
     "SGetNextTakingsResponse",
+    "SuccessResponseSScheduleCreateResponse",
+    "SuccessResponseSGetScheduleResponse",
+    "SuccessResponseListUUID",
+    "SuccessResponseListSGetNextTakingsResponse",
 ]
