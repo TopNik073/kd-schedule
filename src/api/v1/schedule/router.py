@@ -12,10 +12,12 @@ from .schemas import (
     SScheduleCreateResponse,
     SGetScheduleResponse,
     SGetNextTakingsResponse,
+    SuccessResponseSScheduleCreateResponse,
+    SuccessResponseSGetScheduleResponse,
+    SuccessResponseListUUID,
+    SuccessResponseListSGetNextTakingsResponse,
 )
 from uuid import UUID
-from src.api.v1.response_schemas import SuccessResponseSchema
-
 
 if TYPE_CHECKING:
     from src.api.v1.schedule.service import ScheduleService
@@ -29,7 +31,7 @@ router = APIRouter(tags=["schedule"])
 async def create_schedule(
     create_schedule_dto: SScheduleCreateRequest,
     schedule_service: "ScheduleService" = Depends(get_schedule_service),
-) -> SuccessResponseSchema[SScheduleCreateResponse]:
+) -> SuccessResponseSScheduleCreateResponse:
     """
     Create a new schedule for a user. If user is not registered, it will be registered first.
     If end_time and duration are provided, it will use end_time.
@@ -38,7 +40,7 @@ async def create_schedule(
     """
     try:
         schedule_id = await schedule_service.create_schedule(create_schedule_dto)
-        return SuccessResponseSchema(data=SScheduleCreateResponse(id=schedule_id))
+        return SuccessResponseSScheduleCreateResponse(data=SScheduleCreateResponse(id=schedule_id))
     except ValueError as e:
         logger.exception(f"Validation error", exc_info=e)
         raise HTTPException(status_code=400, detail=str(e))
@@ -51,13 +53,13 @@ async def create_schedule(
 async def get_schedules_ids(
     user_id: int = Query(..., gt=0, description="medicine policy number of user"),
     schedule_service: "ScheduleService" = Depends(get_schedule_service),
-) -> SuccessResponseSchema[list[UUID]]:
+) -> SuccessResponseListUUID:
     """
     Get all schedules ids for a user.
     """
     try:
         schedule_ids = await schedule_service.get_schedules_ids_by_policy(user_id)
-        return SuccessResponseSchema(data=schedule_ids)
+        return SuccessResponseListUUID(data=schedule_ids)
     except ValueError as e:
         logger.exception(f"Validation error", exc_info=e)
         raise HTTPException(status_code=400, detail=str(e))
@@ -73,13 +75,13 @@ async def get_schedule(
     user_id: int = Query(..., gt=0, description="medicine policy number of user"),
     schedule_id: UUID = Query(..., description="schedule unique UUID"),
     schedule_service: "ScheduleService" = Depends(get_schedule_service),
-) -> SuccessResponseSchema[SGetScheduleResponse]:
+) -> SuccessResponseSGetScheduleResponse:
     """
     Get a schedule by id.
     """
     try:
         schedule = await schedule_service.get_schedule_by_id(user_id, schedule_id)
-        return SuccessResponseSchema(
+        return SuccessResponseSGetScheduleResponse(
             data=SGetScheduleResponse(
                 medicine_name=schedule.medicine_name,
                 frequency=schedule.frequency,
@@ -104,7 +106,7 @@ async def get_next_takings(
         settings.NEXT_TAKING_TIMING, description="Optional manual next_taking interval"
     ),
     schedule_service: "ScheduleService" = Depends(get_schedule_service),
-) -> SuccessResponseSchema[list[SGetNextTakingsResponse]]:
+) -> SuccessResponseListSGetNextTakingsResponse:
     """
     Get next takings for a user.
     If next_takings is provided, it will use it instead of the default value from the config.
@@ -113,7 +115,7 @@ async def get_next_takings(
         takings: list[SGetNextTakingsResponse] = await schedule_service.get_next_takings_with_model(
             user_id, next_takings
         )
-        return SuccessResponseSchema(data=takings)
+        return SuccessResponseListSGetNextTakingsResponse(data=takings)
     except ValueError as e:
         logger.exception(f"Validation error", exc_info=e)
         raise HTTPException(status_code=400, detail=str(e))
