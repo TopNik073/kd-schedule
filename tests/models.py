@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 class UserTest(BaseModel):
     name: str
     medicine_policy: int
-        
+
+
 class MedicineTest(BaseModel):
     medicine_name: str
     frequency: int

@@ -73,10 +73,9 @@ def find_next_takings(
         if schedule.start_date > current_time:
             if schedule.start_date <= taking_end_time:
                 if settings.MORNING_HOUR <= schedule.start_date.hour <= settings.EVENING_HOUR:
-                    next_takings.append({
-                        "schedule": schedule,
-                        "next_taking_time": schedule.start_date
-                    })
+                    next_takings.append(
+                        {"schedule": schedule, "next_taking_time": schedule.start_date}
+                    )
             continue
 
         elapsed_time: float = (current_time - schedule.start_date).total_seconds() / 60
@@ -96,9 +95,6 @@ def find_next_takings(
         if not (settings.MORNING_HOUR <= next_taking_time.hour <= settings.EVENING_HOUR):
             continue
 
-        next_takings.append({
-            "schedule": schedule,
-            "next_taking_time": next_taking_time
-        })
+        next_takings.append({"schedule": schedule, "next_taking_time": next_taking_time})
 
     return next_takings
