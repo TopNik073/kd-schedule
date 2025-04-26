@@ -2,10 +2,6 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 from datetime import datetime, timezone, timedelta
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from src.repositories import UserRepository, ScheduleRepository
-
 from src.api.v1.schedule.schemas import (
     SScheduleCreateRequest,
     SGetNextTakingsResponse,
@@ -20,6 +16,7 @@ from fastapi import HTTPException
 
 
 if TYPE_CHECKING:
+    from src.repositories import UserRepository, ScheduleRepository
     from src.database.models.schedules import Schedules
     from src.database.models.users import Users
 
@@ -27,9 +24,9 @@ logger = get_logger(__name__)
 
 
 class ScheduleService:
-    def __init__(self, session: AsyncSession):
-        self._schedule_repo = ScheduleRepository(session)
-        self._user_repo = UserRepository(session)
+    def __init__(self, user_repo: "UserRepository", schedule_repo: "ScheduleRepository"):
+        self._schedule_repo = schedule_repo
+        self._user_repo = user_repo
 
     async def create_schedule(self, create_schedule_dto: SScheduleCreateRequest) -> UUID:
         user: "Users" | None = await self._user_repo.get_by_medical_policy(

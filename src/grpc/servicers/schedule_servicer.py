@@ -1,7 +1,7 @@
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from src.grpc.schedule_pb2_grpc import ScheduleServiceServicer
 
 from src.database.connection import AsyncSessionMaker
+from src.repositories import UserRepository, ScheduleRepository
 
 from src.api.v1.schedule.service import ScheduleService
 from src.api.v1.schedule.schemas import SScheduleCreateRequest
@@ -25,11 +25,16 @@ from src.grpc.servicers.utils import (
 )
 
 
-class ScheduleServicer:
+class ScheduleServicer(ScheduleServiceServicer):
     def __init__(self, schedule_service: ScheduleService | None = None):
+        super().__init__()
         self.service: ScheduleService | None = schedule_service
         if self.service is None:
-            self.service: ScheduleService = ScheduleService(AsyncSessionMaker())
+            user_repo: UserRepository = UserRepository(AsyncSessionMaker())
+            schedule_repo: ScheduleRepository = ScheduleRepository(AsyncSessionMaker())
+            self.service: ScheduleService = ScheduleService(
+                user_repo=user_repo, schedule_repo=schedule_repo
+            )
 
     async def CreateSchedule(self, request: CreateScheduleRequest, context):
         schedule_create_dto = SScheduleCreateRequest(
