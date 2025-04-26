@@ -30,4 +30,4 @@ COPY . .
 # Run migrations and start the application
 CMD while ! nc -z db 5432; do sleep 0.1; done && \
     alembic upgrade head && \
-    uvicorn src.main:app --host 0.0.0.0 --port 8000
+    uvicorn src.main:app --host 0.0.0.0 --port 8000 --log-level error
