@@ -5,19 +5,23 @@ from fastapi import FastAPI
 from src.grpc.server import GRPCServer
 
 from src.core.config import settings
-from src.core.logging import setup_app_logging
+from src.core.logger import get_logger
 from src.core.middleware import RequestLoggingMiddleware
 
 from src.api.v1 import v1_router
 
-setup_app_logging()
+logger = get_logger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    grpc_server = GRPCServer(50051)
+    base_path = f"http://{settings.APP_HOST}:{settings.APP_PORT}"
+    logger.info(f"API server started on {base_path}")
+    logger.info(f"OpenAPI docs: {base_path}/docs")
+    grpc_server = GRPCServer(settings.GRPC_SERVER_PORT)
     asyncio.create_task(grpc_server.start())
     yield
+    logger.warning("Stopping API server...")
     await grpc_server.stop()
 
 
@@ -30,4 +34,4 @@ app.include_router(v1_router)
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host=settings.APP_HOST, port=settings.APP_PORT)
+    uvicorn.run(app, host=settings.APP_HOST, port=settings.APP_PORT, log_level=40)

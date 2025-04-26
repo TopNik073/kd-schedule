@@ -7,10 +7,12 @@ from pathlib import Path
 
 class Settings(BaseSettings):
     APP_NAME: str = "kd-schedule"
-    DEBUG: bool = True
+    DEBUG: bool = False
 
     APP_HOST: str = "127.0.0.1"
     APP_PORT: int = 8000
+
+    GRPC_SERVER_PORT: int = 50051
 
     DB_USER: str
     DB_PASS: str
@@ -21,16 +23,18 @@ class Settings(BaseSettings):
     @property
     def DATABASE_URL(self) -> PostgresDsn:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-    
+
     SQLALCHEMY_ECHO: bool = False
-    
+
     LOG_LEVEL: str = "DEBUG"
-    LOG_FORMAT: str = "%(asctime)s | %(levelname)-8s | %(name)s | [%(filename)s:%(funcName)s:%(lineno)d] - %(message)s"
+    LOG_FORMAT: str = (
+        "%(asctime)s | %(levelname)-8s | %(name)s | [%(filename)s:%(funcName)s:%(lineno)d] - %(message)s"
+    )
     LOG_DATE_FORMAT: str = "%Y-%m-%d %H:%M:%S"
-    
+
     BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent
     _LOGS_DIR: Path = BASE_DIR / "logs"
-    
+
     @property
     def LOGS_DIR(self) -> Path:
         os.makedirs(self._LOGS_DIR, exist_ok=True)
