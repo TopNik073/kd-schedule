@@ -18,9 +18,11 @@ class Users(BaseModel):
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False
     )
-    medicine_policy: Mapped[int] = mapped_column(nullable=False)
+    medicine_policy: Mapped[int] = mapped_column(nullable=False, unique=True)
     name: Mapped[str] = mapped_column(nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=get_datetime_UTC)
 
-    schedules: Mapped[List["Schedules"]] = relationship("Schedules", back_populates="user", cascade="all, delete-orphan")
+    schedules: Mapped[List["Schedules"]] = relationship(
+        "Schedules", back_populates="user", cascade="all, delete-orphan"
+    )
