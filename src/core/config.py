@@ -26,11 +26,12 @@ class Settings(BaseSettings):
 
     SQLALCHEMY_ECHO: bool = False
 
-    LOG_LEVEL: str = "DEBUG"
+    LOG_SENSITIVE_DATA: list[str] = ["name"]
+    LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = (
         "%(asctime)s | %(levelname)-8s | %(name)s | [%(filename)s:%(funcName)s:%(lineno)d] - %(message)s"
     )
-    LOG_DATE_FORMAT: str = "%Y-%m-%d %H:%M:%S"
+    LOG_DATE_FORMAT: str = "%Y-%m-%d %H:%M:%S.%f"
 
     BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent
     _LOGS_DIR: Path = BASE_DIR / "logs"

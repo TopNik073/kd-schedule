@@ -83,7 +83,7 @@ class ScheduleService:
 
         logger.debug(
             "Checks are completed, start creating of schedule",
-            extra={"context": {"create_schedule_dto": create_schedule_dto.model_dump_json()}},
+            context={"create_schedule_dto": create_schedule_dto.model_dump_json()},
         )
         schedule: "Schedules" = await self._schedule_repo.create(
             SScheduleCreate(

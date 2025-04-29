@@ -1,5 +1,3 @@
-from sys import prefix
-
 from fastapi import APIRouter
 
 from src.api.v1.schedule.router import router as schedule_router

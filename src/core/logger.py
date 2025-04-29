@@ -1,95 +1,93 @@
-import sys
 import logging
 from logging.handlers import RotatingFileHandler
 import json
+
 from typing import Any
 
+import structlog
 from src.core.config import settings
 
 
-class JSONFormatter(logging.Formatter):
-    SENSITIVE_DATA = ["name"]
+def setup_logging(level: int | str) -> None:
+    handlers = []
 
-    def format(self, record: logging.LogRecord) -> str:
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(level)
+    handlers.append(console_handler)
 
-        log_data = {
-            "timestamp": self.formatTime(record),
-            "level": record.levelname,
-            "logger_name": record.name,
-            "filename": record.filename,
-            "function": record.funcName,
-            "line": record.lineno,
-            "message": record.getMessage(),
-        }
+    file_handler = RotatingFileHandler(
+        settings.LOGS_DIR / f"{settings.APP_NAME}.log",
+        maxBytes=10 * 1024 * 1024,
+        backupCount=5,
+        encoding="utf-8",
+    )
 
-        if record.exc_info:
-            log_data["exception"] = self.formatException(record.exc_info)
+    file_handler.setLevel(level)
+    handlers.append(file_handler)
 
-        if hasattr(record, "context"):
-            log_data["context"] = self.exclude_sensitive_data(record.context)
+    logging.basicConfig(
+        format="%(message)s",
+        handlers=handlers,
+        level=level,
+    )
 
-        return json.dumps(log_data)
 
-    def exclude_sensitive_data(self, data: Any) -> Any:
-        """Recursively mask sensitive data"""
+def get_logger(name: str, level: int | str = settings.LOG_LEVEL) -> structlog.BoundLogger:
+    setup_logging(level)
+    render_method = (
+        structlog.dev.ConsoleRenderer() if settings.DEBUG else structlog.processors.JSONRenderer()
+    )
+    structlog.configure(
+        processors=[
+            structlog.stdlib.add_log_level,
+            structlog.stdlib.add_logger_name,
+            structlog.processors.TimeStamper(fmt=settings.LOG_DATE_FORMAT, utc=True),
+            structlog.processors.CallsiteParameterAdder(
+                parameters=[
+                    structlog.processors.CallsiteParameter.MODULE,
+                    structlog.processors.CallsiteParameter.FUNC_NAME,
+                    structlog.processors.CallsiteParameter.LINENO,
+                ]
+            ),
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            mask_sensitive_data,
+            render_method,
+        ],
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )
 
+    return structlog.get_logger(name)
+
+
+def mask_sensitive_data(logger, method_name, event_dict):
+    """Recursively mask sensitive data"""
+
+    def _mask_data(data: Any) -> Any:
         if isinstance(data, dict):
             result = {}
             for key, value in data.items():
-                if key == "body" and isinstance(value, str) and "{" in value:
+                if isinstance(value, str) and value.startswith("{") and value.endswith("}"):
                     try:
-                        body_json = json.loads(value)
-                        for json_key in body_json.keys():
-                            if isinstance(body_json[json_key], dict):
-                                self.exclude_sensitive_data(body_json[json_key])
-                            if json_key in self.SENSITIVE_DATA:
-                                body_json[json_key] = "SENSITIVE DATA"
-                        result[key] = json.dumps(body_json)
+                        result[key] = _mask_data(json.loads(value))
                     except:
                         result[key] = value
-                elif key in self.SENSITIVE_DATA:
+                elif key in settings.LOG_SENSITIVE_DATA:
                     result[key] = "SENSITIVE DATA"
                 elif isinstance(value, (dict, list)):
-                    result[key] = self.exclude_sensitive_data(value)
+                    result[key] = _mask_data(value)
                 else:
                     result[key] = value
             return result
         elif isinstance(data, list):
-            return [self.exclude_sensitive_data(item) for item in data]
+            return [_mask_data(item) for item in data]
         else:
             return data
 
+    if "context" in event_dict:
+        event_dict["context"] = _mask_data(event_dict["context"])
 
-def get_json_formatter() -> JSONFormatter:
-    return JSONFormatter(datefmt=settings.LOG_DATE_FORMAT)
-
-
-def get_formatter() -> logging.Formatter:
-    return logging.Formatter(settings.LOG_FORMAT, datefmt=settings.LOG_DATE_FORMAT)
-
-
-def get_logger(name: str, level: int | None = None) -> logging.Logger:
-    if level is None:
-        level = getattr(logging, settings.LOG_LEVEL)
-
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
-
-    if not logger.handlers:
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(level)
-        console_handler.setFormatter(get_json_formatter())
-        logger.addHandler(console_handler)
-
-        logs_dir = settings.LOGS_DIR
-        file_handler = RotatingFileHandler(
-            logs_dir / f"{settings.APP_NAME}.log",
-            maxBytes=10 * 1024 * 1024,
-            backupCount=5,
-            encoding="utf-8",
-        )
-        file_handler.setLevel(level)
-        file_handler.setFormatter(get_json_formatter())
-        logger.addHandler(file_handler)
-
-    return logger
+    return event_dict
