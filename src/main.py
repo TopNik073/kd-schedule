@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
     grpc_server = GRPCServer(settings.GRPC_SERVER_PORT)
     asyncio.create_task(grpc_server.start())
     yield
-    logger.warning("Stopping API server...")
+    logger.warning("Stopping app...")
     await grpc_server.stop()
 
 
@@ -35,3 +35,4 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(app, host=settings.APP_HOST, port=settings.APP_PORT, log_level=40)
+    logger.warning("API server stopped")
