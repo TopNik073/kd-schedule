@@ -8,25 +8,31 @@ on:
 
 jobs:
   lint:
-    uses: ./.github/workflows/setup-ci.yml
-    with:
-      dependencies: ruff
+    name: Lint (Ruff)
+    runs-on: ubuntu-latest
     steps:
+      - uses: ./.github/workflows/setup-ci.yml
+        with:
+          dependencies: ruff
       - name: Run ruff
         run: ruff check .
 
   format:
-    uses: ./.github/workflows/setup-ci.yml
-    with:
-      dependencies: black
+    name: Check formatting (Black)
+    runs-on: ubuntu-latest
     steps:
+      - uses: ./.github/workflows/setup-ci.yml
+        with:
+          dependencies: black
       - name: Run black
         run: black --check .
 
   test:
-    uses: ./.github/workflows/setup-ci.yml
-    with:
-      dependencies: pytest pytest-asyncio
+    name: Run tests
+    runs-on: ubuntu-latest
     steps:
+      - uses: ./.github/workflows/setup-ci.yml
+        with:
+          dependencies: pytest pytest-asyncio
       - name: Run tests
         run: pytest
