@@ -79,6 +79,8 @@ def mask_sensitive_data(logger, method_name, event_dict):
                     result[key] = "SENSITIVE DATA"
                 elif key == "query":
                     params = value.split("&")
+                    if len(params) == 0 or params[0] == "":
+                        return data
                     temp = {}
                     for param in params:
                         param_name, param_value = param.split("=")
