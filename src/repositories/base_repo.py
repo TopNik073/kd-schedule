@@ -187,12 +187,7 @@ class BaseRepository(IBaseRepository[MODEL_TYPE]):
         if isinstance(data, PydanticBaseModel):
             data = data.model_dump()
 
-        query = (
-            update(self.model)
-            .where(self.model.id == id)
-            .values(**data)
-            .returning(self.model)
-        )
+        query = update(self.model).where(self.model.id == id).values(**data).returning(self.model)
         result = await self._session.execute(query)
         if not self._session.in_transaction():
             await self._session.commit()

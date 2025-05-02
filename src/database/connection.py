@@ -27,4 +27,5 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         finally:
             await session.close()
 
+
 DB_DEPENDENCY = Annotated[AsyncSession, Depends(get_db)]

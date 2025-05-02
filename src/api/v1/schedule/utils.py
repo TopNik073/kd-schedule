@@ -58,7 +58,7 @@ def round_to_multiple_dt(value: datetime | None, multiple: int = 15) -> datetime
 def find_next_takings(
     schedules: list["Schedules"],
     next_taking_interval: timedelta,
-    current_time: datetime | None = None
+    current_time: datetime | None = None,
 ) -> list[dict[str, "Schedules"]]:
     if current_time is None:
         current_time = datetime.now(timezone.utc)

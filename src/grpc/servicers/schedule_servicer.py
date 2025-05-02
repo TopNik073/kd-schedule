@@ -35,9 +35,7 @@ class ScheduleServicer(ScheduleServiceServicer):
             async with AsyncSessionMaker() as session:
                 user_repo: UserRepository = UserRepository(session)
                 schedule_repo: ScheduleRepository = ScheduleRepository(session)
-                yield ScheduleService(
-                    user_repo=user_repo, schedule_repo=schedule_repo
-                )
+                yield ScheduleService(user_repo=user_repo, schedule_repo=schedule_repo)
 
     async def CreateSchedule(self, request: CreateScheduleRequest, context):
         async with self.get_service() as service:

@@ -19,6 +19,7 @@ def convert_from_duration(request, target: str) -> timedelta:
 
     return None
 
+
 def convert_to_timestamp(datetime: datetime) -> Timestamp:
     timestamp = Timestamp()
     timestamp.FromDatetime(datetime)
