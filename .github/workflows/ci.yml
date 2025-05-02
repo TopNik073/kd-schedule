@@ -27,7 +27,7 @@ jobs:
         run: ruff check .
 
   format:
-    name: Check formatting with Black
+    name: Check formatting (Black)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
