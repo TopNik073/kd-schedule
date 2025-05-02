@@ -84,17 +84,14 @@ def find_next_takings(
             minutes=intervals_passed * schedule.frequency
         )
 
-        next_taking_time: datetime = last_taking_time + timedelta(minutes=schedule.frequency)
+        next_taking_time = last_taking_time + timedelta(minutes=schedule.frequency)
+        while next_taking_time <= taking_end_time:
+            if schedule.end_date and next_taking_time > schedule.end_date:
+                break
 
-        if next_taking_time > taking_end_time:
-            continue
+            if settings.MORNING_HOUR <= next_taking_time.hour <= settings.EVENING_HOUR:
+                next_takings.append({"schedule": schedule, "next_taking_time": next_taking_time})
 
-        if schedule.end_date and next_taking_time > schedule.end_date:
-            continue
-
-        if not (settings.MORNING_HOUR <= next_taking_time.hour <= settings.EVENING_HOUR):
-            continue
-
-        next_takings.append({"schedule": schedule, "next_taking_time": next_taking_time})
+            next_taking_time += timedelta(minutes=schedule.frequency)
 
     return next_takings
