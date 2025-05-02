@@ -1,0 +1,32 @@
+name: Test and lint
+
+on:
+  push:
+    branches: [main, feat-tests]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    uses: ./.github/workflows/setup-ci.yml
+    with:
+      dependencies: ruff
+    steps:
+      - name: Run ruff
+        run: ruff check .
+
+  format:
+    uses: ./.github/workflows/setup-ci.yml
+    with:
+      dependencies: black
+    steps:
+      - name: Run black
+        run: black --check .
+
+  test:
+    uses: ./.github/workflows/setup-ci.yml
+    with:
+      dependencies: pytest pytest-asyncio
+    steps:
+      - name: Run tests
+        run: pytest
