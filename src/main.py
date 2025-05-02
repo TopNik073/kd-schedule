@@ -2,13 +2,12 @@ import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from src.grpc.server import GRPCServer
 
+from src.api.v1 import v1_router
 from src.core.config import settings
 from src.core.logger import get_logger
 from src.core.middleware import RequestLoggingMiddleware
-
-from src.api.v1 import v1_router
+from src.grpc.server import GRPCServer
 
 logger = get_logger(__name__)
 

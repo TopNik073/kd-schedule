@@ -1,10 +1,10 @@
+import json
 import logging
 from logging.handlers import RotatingFileHandler
-import json
-
 from typing import Any
 
 import structlog
+
 from src.core.config import settings
 
 
@@ -73,7 +73,11 @@ def mask_sensitive_data(logger, method_name, event_dict):
                 if isinstance(value, str) and value.startswith("{") and value.endswith("}"):
                     try:
                         result[key] = _mask_data(json.loads(value))
-                    except:
+                    except Exception as e:
+                        logger.warning(
+                            f"Error masking data: {e}",
+                            exc_info=e,
+                        )
                         result[key] = value
                 elif key in settings.LOG_SENSITIVE_DATA:
                     result[key] = "SENSITIVE DATA"

@@ -1,8 +1,9 @@
 import uuid
 from datetime import datetime
-from typing import List, TYPE_CHECKING
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING
+
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database.models.BaseModel import BaseModel, get_datetime_UTC
 
@@ -23,6 +24,6 @@ class Users(BaseModel):
 
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=get_datetime_UTC)
 
-    schedules: Mapped[List["Schedules"]] = relationship(
+    schedules: Mapped[list["Schedules"]] = relationship(
         "Schedules", back_populates="user", cascade="all, delete-orphan"
     )

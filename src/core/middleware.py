@@ -2,9 +2,9 @@ import time
 import uuid
 from typing import Literal
 
-from fastapi import HTTPException
-from fastapi import Request, Response
+from fastapi import HTTPException, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
+
 from src.core.logger import get_logger
 
 logger = get_logger(__name__)
@@ -40,15 +40,15 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         except ValueError as e:
             await self.create_final_log("failed", request, context, start_time, 400, e)
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
         except HTTPException as e:
             await self.create_final_log("failed", request, context, start_time, e.status_code, e)
-            raise
+            raise e
 
         except Exception as e:
             await self.create_final_log("failed", request, context, start_time, 500, e)
-            raise HTTPException(status_code=500, detail="Internal server error")
+            raise HTTPException(status_code=500, detail="Internal server error") from e
 
     @staticmethod
     def get_response_size(response: Response):
@@ -60,7 +60,11 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                 response_size = len(response.body)
 
             return response_size
-        except:
+        except Exception as e:
+            logger.warning(
+                f"Error getting response size: {e}",
+                exc_info=e,
+            )
             return 0
 
     @staticmethod

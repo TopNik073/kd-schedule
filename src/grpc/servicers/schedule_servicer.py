@@ -1,29 +1,27 @@
 from contextlib import asynccontextmanager
-from src.grpc.schedule_pb2_grpc import ScheduleServiceServicer
 
-from src.database.connection import AsyncSessionMaker
-from src.repositories import UserRepository, ScheduleRepository
-
-from src.api.v1.schedule.service import ScheduleService
 from src.api.v1.schedule.schemas import SScheduleCreateRequest
+from src.api.v1.schedule.service import ScheduleService
+from src.database.connection import AsyncSessionMaker
 from src.grpc.schedule_pb2 import (
     CreateScheduleRequest,
     CreateScheduleResponse,
+    GetNextTakingsRequest,
+    GetNextTakingsResponse,
     GetScheduleRequest,
     GetScheduleResponse,
     GetSchedulesIdsRequest,
     GetSchedulesIdsResponse,
-    GetNextTakingsRequest,
-    GetNextTakingsResponse,
-    ScheduleInfo,
     NextTakingInfo,
+    ScheduleInfo,
 )
-
+from src.grpc.schedule_pb2_grpc import ScheduleServiceServicer
 from src.grpc.servicers.utils import (
-    convert_from_timestamp,
     convert_from_duration,
+    convert_from_timestamp,
     convert_to_timestamp,
 )
+from src.repositories import ScheduleRepository, UserRepository
 
 
 class ScheduleServicer(ScheduleServiceServicer):

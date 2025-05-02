@@ -1,15 +1,14 @@
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import asyncio
-import grpc
 import uuid
 from datetime import datetime, timedelta
-from google.protobuf.timestamp_pb2 import Timestamp
-from google.protobuf.duration_pb2 import Duration
 
+from google.protobuf.timestamp_pb2 import Timestamp
+
+import grpc
 from src.grpc.schedule_pb2 import CreateScheduleRequest
 from src.grpc.schedule_pb2_grpc import ScheduleServiceStub
 
@@ -38,7 +37,9 @@ async def create_schedule():
 
         print("Sending request to create schedule...")
         print(
-            f"Data: name={request.name}, medicine={request.medicine_name}, frequency={request.frequency} mins"
+            f"Data: name={request.name}, "
+            f"medicine={request.medicine_name}, "
+            f"frequency={request.frequency} mins"
         )
 
         response = await stub.CreateSchedule(request)
@@ -46,10 +47,10 @@ async def create_schedule():
         print("Schedule created successfully")
         print(f"schedule UUID: {response.id}")
         try:
-            uuid_obj = uuid.UUID(response.id)
+            uuid.UUID(response.id)
             print("UUID is valid")
         except ValueError:
-            print(f"UUID is NOT valid")
+            print("UUID is NOT valid")
 
         return response.id
 

@@ -1,17 +1,17 @@
-import pytest
-import grpc
 import uuid
 from datetime import timedelta
 
-from src.grpc.schedule_pb2_grpc import ScheduleServiceStub
+import pytest
 
+import grpc
 from src.grpc.schedule_pb2 import (
     CreateScheduleRequest,
-    GetSchedulesIdsRequest,
-    GetScheduleRequest,
     GetNextTakingsRequest,
+    GetScheduleRequest,
+    GetSchedulesIdsRequest,
 )
-from tests.models import UserTest, MedicineTest
+from src.grpc.schedule_pb2_grpc import ScheduleServiceStub
+from tests.models import MedicineTest, UserTest
 
 
 @pytest.mark.asyncio(loop_scope="session")

@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
+
 from google.protobuf.timestamp_pb2 import Timestamp
+
 
 def convert_from_timestamp(request, target: str) -> datetime:
     """Convert Protobuf Timestamp to datetime"""

@@ -1,10 +1,8 @@
 import grpc
-
-from src.grpc.schedule_pb2_grpc import add_ScheduleServiceServicer_to_server
-from src.grpc.servicers.schedule_servicer import ScheduleServicer
-
 from src.core.logger import get_logger
 from src.grpc.interceptors import LoggingInterceptor
+from src.grpc.schedule_pb2_grpc import add_ScheduleServiceServicer_to_server
+from src.grpc.servicers.schedule_servicer import ScheduleServicer
 
 logger = get_logger(__name__)
 

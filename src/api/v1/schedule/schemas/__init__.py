@@ -1,16 +1,17 @@
-from pydantic import BaseModel, Field
 from datetime import datetime
 from uuid import UUID
 
+from pydantic import BaseModel, Field
+
 from src.api.v1.schedule.schemas.generated_schemas import (
+    SGetNextTakingsResponse,
+    SGetScheduleResponse,
     SScheduleCreateRequest,
     SScheduleCreateResponse,
-    SGetScheduleResponse,
-    SGetNextTakingsResponse,
-    SuccessResponseSScheduleCreateResponse,
-    SuccessResponseSGetScheduleResponse,
-    SuccessResponseListUUID,
     SuccessResponseListSGetNextTakingsResponse,
+    SuccessResponseListUUID,
+    SuccessResponseSGetScheduleResponse,
+    SuccessResponseSScheduleCreateResponse,
 )
 
 

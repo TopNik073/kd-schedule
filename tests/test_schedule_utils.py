@@ -1,6 +1,7 @@
-import pytest
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
+
+import pytest
 
 from src.api.v1.schedule.utils import find_next_takings
 from src.database.models.schedules import Schedules
@@ -89,7 +90,7 @@ class TestFindNextTakings:
         assert takings[2]["next_taking_time"] == datetime(2025, 1, 1, 11, 30, tzinfo=timezone.utc)
         assert takings[3]["next_taking_time"] == datetime(2025, 1, 1, 12, 0, tzinfo=timezone.utc)
 
-    def test_multiple_schedules(self, test_schedule: Schedules, test_schedule_no_end: Schedules) -> None:
+    def test_multiple_schedules(self, test_schedule: Schedules, test_schedule_no_end: Schedules):
         # Test multiple schedules
         current_time = datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc)
         interval = timedelta(hours=1)

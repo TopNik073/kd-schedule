@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from uuid import UUID
-from pydantic import BaseModel, ConfigDict, Field, field_validator, ValidationInfo
+
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
 
 # ---BASE SCHEMAS---

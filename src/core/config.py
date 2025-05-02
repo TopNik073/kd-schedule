@@ -1,8 +1,9 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import PostgresDsn
 import os
 from datetime import timedelta
 from pathlib import Path
+
+from pydantic import PostgresDsn
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -30,7 +31,8 @@ class Settings(BaseSettings):
     LOG_SENSITIVE_DATA: list[str] = ["name"]
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = (
-        "%(asctime)s | %(levelname)-8s | %(name)s | [%(filename)s:%(funcName)s:%(lineno)d] - %(message)s"
+        "%(asctime)s | %(levelname)-8s | %(name)s | "
+        "[%(filename)s:%(funcName)s:%(lineno)d] - %(message)s"
     )
     LOG_DATE_FORMAT: str = "%Y-%m-%d %H:%M:%S.%f"
 

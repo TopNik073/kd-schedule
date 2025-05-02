@@ -1,14 +1,13 @@
-from typing import Generic, TypeVar, Any
 from abc import ABC, abstractmethod
-
+from typing import Any, Generic, TypeVar
 from uuid import UUID
 
+from pydantic import BaseModel as PydanticBaseModel
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete
 from sqlalchemy.orm import joinedload
 
 from src.database.models.BaseModel import BaseModel
-from pydantic import BaseModel as PydanticBaseModel
 
 MODEL_TYPE = TypeVar("MODEL_TYPE", bound=BaseModel)
 PYDANTIC_TYPE = TypeVar("PYDANTIC_TYPE", bound=PydanticBaseModel)
@@ -144,7 +143,7 @@ class BaseRepository(IBaseRepository[MODEL_TYPE]):
         return obj
 
     async def get_by_id(self, id: UUID) -> MODEL_TYPE:
-        query = select(self.model).where(getattr(self.model, "id") == id)
+        query = select(self.model).where(self.model.id == id)
         result = await self._session.execute(query)
         return result.scalar_one_or_none()
 
@@ -164,7 +163,7 @@ class BaseRepository(IBaseRepository[MODEL_TYPE]):
     async def get_by_id_with_relations(
         self, id: UUID, relations: list[str] | None = None
     ) -> MODEL_TYPE:
-        query = select(self.model).where(getattr(self.model, "id") == id)
+        query = select(self.model).where(self.model.id == id)
         if relations:
             for relation in relations:
                 query = query.options(joinedload(getattr(self.model, relation)))
@@ -190,7 +189,7 @@ class BaseRepository(IBaseRepository[MODEL_TYPE]):
 
         query = (
             update(self.model)
-            .where(getattr(self.model, "id") == id)
+            .where(self.model.id == id)
             .values(**data)
             .returning(self.model)
         )
@@ -200,7 +199,7 @@ class BaseRepository(IBaseRepository[MODEL_TYPE]):
         return result.scalar_one_or_none()
 
     async def delete(self, id: UUID) -> bool:
-        query = delete(self.model).where(getattr(self.model, "id") == id)
+        query = delete(self.model).where(self.model.id == id)
         result = await self._session.execute(query)
         if not self._session.in_transaction():
             await self._session.commit()

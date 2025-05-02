@@ -1,7 +1,7 @@
-import sys
-import logging
-from logging.handlers import RotatingFileHandler
 import json
+import logging
+import sys
+from logging.handlers import RotatingFileHandler
 from typing import Any
 
 from src.core.config import settings
@@ -45,7 +45,7 @@ class JSONFormatter(logging.Formatter):
                             if json_key in self.SENSITIVE_DATA:
                                 body_json[json_key] = "SENSITIVE DATA"
                         result[key] = json.dumps(body_json)
-                    except:
+                    except Exception:
                         result[key] = value
                 elif key in self.SENSITIVE_DATA:
                     result[key] = "SENSITIVE DATA"

@@ -1,24 +1,23 @@
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 from uuid import UUID
-from datetime import datetime, timezone, timedelta
-
-from src.api.v1.schedule.schemas import (
-    SScheduleCreateRequest,
-    SGetNextTakingsResponse,
-    SScheduleCreate,
-    SUserCreate,
-)
-from src.api.v1.schedule.utils import round_to_multiple, round_to_multiple_dt, find_next_takings
-from src.core.logger import get_logger
-from src.core.config import settings
 
 from fastapi import HTTPException
 
+from src.api.v1.schedule.schemas import (
+    SGetNextTakingsResponse,
+    SScheduleCreate,
+    SScheduleCreateRequest,
+    SUserCreate,
+)
+from src.api.v1.schedule.utils import find_next_takings, round_to_multiple, round_to_multiple_dt
+from src.core.config import settings
+from src.core.logger import get_logger
 
 if TYPE_CHECKING:
-    from src.repositories import UserRepository, ScheduleRepository
     from src.database.models.schedules import Schedules
     from src.database.models.users import Users
+    from src.repositories import ScheduleRepository, UserRepository
 
 logger = get_logger(__name__)
 
@@ -29,14 +28,14 @@ class ScheduleService:
         self._user_repo = user_repo
 
     async def create_schedule(self, create_schedule_dto: SScheduleCreateRequest) -> UUID:
-        user: "Users" | None = await self._user_repo.get_by_medical_policy(
+        user: Users | None = await self._user_repo.get_by_medical_policy(
             create_schedule_dto.medicine_policy
         )
         if user is None:
             logger.debug(
                 f"User with policy {create_schedule_dto.medicine_policy} not found, create new one"
             )
-            user: "Users" = await self._user_repo.create(
+            user: Users = await self._user_repo.create(
                 SUserCreate(
                     name=create_schedule_dto.name,
                     medicine_policy=create_schedule_dto.medicine_policy,
@@ -55,7 +54,8 @@ class ScheduleService:
 
         if not (settings.MORNING_HOUR <= start_date.hour <= settings.EVENING_HOUR):
             raise ValueError(
-                f"Start time must be between {settings.MORNING_HOUR}:00 and {settings.EVENING_HOUR}:00"
+                f"Start time must be between {settings.MORNING_HOUR}:00 "
+                f"and {settings.EVENING_HOUR}:00"
             )
 
         end_date = create_schedule_dto.end_date
@@ -78,14 +78,15 @@ class ScheduleService:
             raise ValueError("End date must be greater than start date")
         if not (settings.MORNING_HOUR <= end_date.hour <= settings.EVENING_HOUR):
             raise ValueError(
-                f"End time must be between {settings.MORNING_HOUR}:00 and {settings.EVENING_HOUR}:00 (provided: {end_date.strftime('%Y-%m-%d %H:%M:%S')})"
+                f"End time must be between {settings.MORNING_HOUR}:00 and "
+                f"{settings.EVENING_HOUR}:00 (provided: {end_date.strftime('%Y-%m-%d %H:%M:%S')})"
             )
 
         logger.debug(
             "Checks are completed, start creating of schedule",
             context={"create_schedule_dto": create_schedule_dto.model_dump_json()},
         )
-        schedule: "Schedules" = await self._schedule_repo.create(
+        schedule: Schedules = await self._schedule_repo.create(
             SScheduleCreate(
                 medicine_name=create_schedule_dto.medicine_name,
                 frequency=round_to_multiple(create_schedule_dto.frequency, 15),
@@ -99,7 +100,7 @@ class ScheduleService:
         return schedule.id
 
     async def get_schedules_by_policy(self, medicine_policy: int) -> list["Schedules"]:
-        users: list["Users"] | None = await self._user_repo.get_all_with_relations(
+        users: list[Users] | None = await self._user_repo.get_all_with_relations(
             ["schedules"], medicine_policy=medicine_policy
         )
         if len(users) != 1:
@@ -111,7 +112,7 @@ class ScheduleService:
         return [sch.id for sch in await self.get_schedules_by_policy(medicine_policy)]
 
     async def get_schedule_by_id(self, medicine_policy: int, schedule_id: UUID) -> "Schedules":
-        user_schedules: list["Schedules"] = await self.get_schedules_by_policy(medicine_policy)
+        user_schedules: list[Schedules] = await self.get_schedules_by_policy(medicine_policy)
         schedule = [sch for sch in user_schedules if str(sch.id) == str(schedule_id)]
         if len(schedule) != 1:
             raise HTTPException(404, f"Schedule with id {schedule_id} not found")
@@ -123,7 +124,7 @@ class ScheduleService:
         medicine_policy: int,
         next_takings_interval: timedelta = settings.NEXT_TAKING_TIMING,
     ) -> list[dict[str, "Schedules"]]:
-        user_schedules: list["Schedules"] = await self.get_schedules_by_policy(medicine_policy)
+        user_schedules: list[Schedules] = await self.get_schedules_by_policy(medicine_policy)
         return find_next_takings(
             user_schedules,
             next_takings_interval,
@@ -132,7 +133,7 @@ class ScheduleService:
     async def get_next_takings_with_model(
         self,
         medicine_policy: int,
-        next_takings_interval: timedelta | None = settings.NEXT_TAKING_TIMING,
+        next_takings_interval: timedelta | None,
     ) -> list[SGetNextTakingsResponse]:
         next_takings = await self.get_next_takings(
             medicine_policy,
