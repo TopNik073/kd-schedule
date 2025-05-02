@@ -11,19 +11,37 @@ jobs:
     name: Lint (Ruff)
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/workflows/setup-ci.yml
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          dependencies: ruff
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
       - name: Run ruff
         run: ruff check .
 
   format:
-    name: Check formatting (Black)
+    name: Check formatting with Black
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/workflows/setup-ci.yml
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          dependencies: black
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black
+
       - name: Run black
         run: black --check .
 
@@ -31,8 +49,17 @@ jobs:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/workflows/setup-ci.yml
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          dependencies: pytest pytest-asyncio
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
       - name: Run tests
         run: pytest
