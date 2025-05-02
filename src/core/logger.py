@@ -77,6 +77,13 @@ def mask_sensitive_data(logger, method_name, event_dict):
                         result[key] = value
                 elif key in settings.LOG_SENSITIVE_DATA:
                     result[key] = "SENSITIVE DATA"
+                elif key == "query":
+                    params = value.split("&")
+                    temp = {}
+                    for param in params:
+                        param_name, param_value = param.split("=")
+                        temp[param_name] = param_value
+                    result[key] = _mask_data(temp)
                 elif isinstance(value, (dict, list)):
                     result[key] = _mask_data(value)
                 else:
