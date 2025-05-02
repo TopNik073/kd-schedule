@@ -16,28 +16,32 @@ from tests.models import UserTest, MedicineTest
 
 @pytest.mark.asyncio(loop_scope="session")
 class TestScheduleServicer:
+    @pytest.fixture(autouse=True)
+    async def setup(self):
+        self.channel = grpc.aio.insecure_channel("localhost:50051")
+        self.stub = ScheduleServiceStub(self.channel)
+        yield
+        await self.channel.close()
+
     @pytest.mark.asyncio
     @pytest.mark.parametrize("use_end_time", [True, False])
     async def test_schedule_servicer_e2e(self, get_test_user, get_test_medicine, use_end_time):
-        channel = grpc.aio.insecure_channel("localhost:50051")
-        stub = ScheduleServiceStub(channel)
-
         # Step 1: Create a schedule
         schedule_id = await self._create_schedule(
-            stub, get_test_user, get_test_medicine, use_end_time
+            self.stub, get_test_user, get_test_medicine, use_end_time
         )
 
         assert schedule_id is not None
         assert uuid.UUID(schedule_id)
 
         # Step 2: Get the schedules ids
-        schedules_ids = await self._get_schedules_ids(stub, get_test_user)
+        schedules = await self._get_schedules_ids(self.stub, get_test_user)
 
-        assert len(schedules_ids.schedule_ids) >= 1
-        assert schedule_id in schedules_ids.schedule_ids
+        assert len(schedules.schedule_ids) >= 1
+        assert schedule_id in schedules.schedule_ids
 
-        # # Step 3: Get the schedule
-        response = await self._get_schedule(stub, schedule_id, get_test_user)
+        # Step 3: Get the schedule
+        response = await self._get_schedule(self.stub, schedule_id, get_test_user)
 
         assert hasattr(response, "schedule")
         schedule = response.schedule
@@ -47,7 +51,7 @@ class TestScheduleServicer:
         assert schedule.end_date is not None
 
         # Step 4: Get the next takings
-        next_takings = await self._get_next_takings(stub, get_test_user)
+        next_takings = await self._get_next_takings(self.stub, get_test_user)
 
         assert next_takings is not None
         assert len(next_takings.takings) >= 1
@@ -60,12 +64,10 @@ class TestScheduleServicer:
 
         assert next_taking is not None
 
-        await channel.close()
-
-    async def _send_request(self, method: grpc.aio._channel.UnaryUnaryMultiCallable, request):
+    @staticmethod
+    async def _send_request(method: grpc.aio._channel.UnaryUnaryMultiCallable, request):
         try:
             response = await method(request)
-            print(response)
             assert response is not None
             return response
         except grpc.RpcError as e:

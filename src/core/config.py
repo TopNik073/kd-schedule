@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import PostgresDsn
 import os
 from datetime import timedelta
@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
     APP_NAME: str = "kd-schedule"
     DEBUG: bool = False
 

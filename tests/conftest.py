@@ -2,19 +2,17 @@ import pytest
 import asyncio
 from datetime import datetime, timedelta
 
-# from src.grpc.server import GRPCServer
+from src.grpc.server import GRPCServer
 
 from tests.models import UserTest, MedicineTest
 
-# TODO: fix clossing connections for db after tests (appears when grpc server is started with this fixture)
-# @pytest.fixture(scope="function", autouse=True)
-# async def start_grpc_server():
-#     server = GRPCServer(50051)
-#     await server.start()
-#     print("GRPC Server started")
-#     yield server
-#     print("GRPC Server stopped")
-#     await server.stop()
+
+@pytest.fixture(scope="session", autouse=True)
+async def start_grpc_server():
+    server = GRPCServer(50051)
+    await server.start()
+    yield server
+    await server.stop()
 
 
 @pytest.fixture(scope="module")
