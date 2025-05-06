@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
     logger.info(f"API server started on {base_path}")
     logger.info(f"OpenAPI docs: {base_path}/docs")
     grpc_server = GRPCServer(settings.GRPC_SERVER_PORT)
-    asyncio.create_task(grpc_server.start())
+    await grpc_server.start()
     yield
     logger.warning("Stopping app...")
     await grpc_server.stop()
