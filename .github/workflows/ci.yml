@@ -10,18 +10,22 @@ jobs:
   lint:
     name: Lint (Ruff)
     runs-on: ubuntu-latest
+    env:
+      UV_SYSTEM_PYTHON: 1
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
+          python-version-file: 'pyproject.toml'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install ruff
+      - name: Install ruff
+        run: uv pip install ruff
 
       - name: Run ruff
         run: ruff check .
@@ -29,18 +33,22 @@ jobs:
   format:
     name: Check formatting (Black)
     runs-on: ubuntu-latest
+    env:
+      UV_SYSTEM_PYTHON: 1
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
+          python-version-file: 'pyproject.toml'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install black
+      - name: Install black
+        run: uv pip install black
 
       - name: Run black
         run: black --check .
@@ -68,22 +76,27 @@ jobs:
       DB_HOST: localhost
       DB_PORT: 5432
       DB_NAME: test_db
+      UV_SYSTEM_PYTHON: 1
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
+          python-version-file: 'pyproject.toml'
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: uv pip install -e .
 
       - name: Run migrations
-        run: |
-          alembic upgrade head
+        run: alembic upgrade head
 
       - name: Run tests
         run: pytest
