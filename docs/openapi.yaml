@@ -18,6 +18,7 @@ components:
           title: Error
       required:
         - success
+        - error
       title: ResponseSchema
       x-stoplight:
         id: q5e86jay8yoff
@@ -29,22 +30,19 @@ components:
             success:
               type: boolean
               default: true
+            error:
+              type: string
+              nullable: true
+              default: null
+            data:
+              oneOf:
+                - type: object
+                - type: array
+          required:
+            - data
           title: SuccessResponseSchema
       x-stoplight:
         id: tcs5iahh4xwus
-    ErrorResponseSchema:
-      allOf:
-        - $ref: '#/components/schemas/ResponseSchema'
-        - type: object
-          properties:
-            success:
-              type: boolean
-              default: false
-            data:
-              nullable: true
-          title: ErrorResponseSchema
-      x-stoplight:
-        id: nizy02gzhpwg3
     SuccessResponse_SGetScheduleResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponseSchema'

@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel, Field, PositiveInt
@@ -12,16 +12,13 @@ from pydantic import BaseModel, Field, PositiveInt
 
 class ResponseSchema(BaseModel):
     success: bool = Field(..., title='Success')
-    error: Optional[str] = Field(None, title='Error')
+    error: str = Field(..., title='Error')
 
 
 class SuccessResponseSchema(ResponseSchema):
     success: Optional[bool] = True
-
-
-class ErrorResponseSchema(ResponseSchema):
-    success: Optional[bool] = False
-    data: Optional[Any] = None
+    error: Optional[str] = None
+    data: Union[Dict[str, Any], List]
 
 
 class SuccessResponseListUUID(SuccessResponseSchema):
