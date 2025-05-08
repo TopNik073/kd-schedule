@@ -23,14 +23,14 @@ class GRPCServer:
             self.server.add_insecure_port(f"[::]:{self.port}")
             await self.server.start()
             logger.info(f"gRPC server started on port {self.port}")
-        except Exception as e:
-            logger.error(f"Error starting gRPC server: {e}")
-            raise e
+        except:
+            logger.exception("Error starting gRPC server")
+            raise
 
     async def stop(self) -> None:
         try:
             await self.server.stop(None)
             logger.warning("gRPC server stopped")
-        except Exception as e:
-            logger.error(f"Error stopping gRPC server: {e}")
-            raise e
+        except:
+            logger.exception("Error stopping gRPC server")
+            raise
