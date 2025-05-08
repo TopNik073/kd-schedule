@@ -16,7 +16,8 @@ services:
        - "8000:8000"
        - "50051:50051"
      depends_on:
-       - db
+       db:
+         condition: service_healthy
      volumes:
        - .:/app:ro
        - ./logs:/app/logs
@@ -27,6 +28,11 @@ services:
     image: postgres:17.2
     container_name: db-kd-container
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}", "-d", "${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}

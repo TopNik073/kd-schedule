@@ -1,0 +1,15 @@
+README.md
+.git
+.github
+.gitignore
+.gitattributes
+.venv
+.env.template
+pytest.ini
+.vscode
+.ruff_cache
+.pytest_cache
+.idea
+.db_homework
+.diagrams
+.tests
