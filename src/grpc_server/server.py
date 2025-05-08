@@ -19,10 +19,18 @@ class GRPCServer:
         add_ScheduleServiceServicer_to_server(schedule_service, self.server)
 
     async def start(self) -> None:
-        self.server.add_insecure_port(f"[::]:{self.port}")
-        await self.server.start()
-        logger.info(f"gRPC server started on port {self.port}")
+        try:
+            self.server.add_insecure_port(f"[::]:{self.port}")
+            await self.server.start()
+            logger.info(f"gRPC server started on port {self.port}")
+        except Exception as e:
+            logger.error(f"Error starting gRPC server: {e}")
+            raise e
 
     async def stop(self) -> None:
-        await self.server.stop(None)
-        logger.warning("gRPC server stopped")
+        try:
+            await self.server.stop(None)
+            logger.warning("gRPC server stopped")
+        except Exception as e:
+            logger.error(f"Error stopping gRPC server: {e}")
+            raise e
