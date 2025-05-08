@@ -32,7 +32,7 @@ jobs:
           
       - name: Generate models from OpenAPI
         run: |
-          datamodel-codegen --input docs/openapi.yaml --output src/api/v1/schedule/schemas/generated_schemas.py --disable-timestamp
+          datamodel-codegen --input docs/openapi.yaml --input-file-type openapi --output src/api/v1/schedule/schemas/generated_schemas.py --disable-timestamp
           
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7

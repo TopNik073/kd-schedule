@@ -55,4 +55,4 @@ app-start:
 # Generate schemas from openapi.yaml (codegeneration)
 [group('app')]
 generate-schemas:
-    uv run datamodel-codegen --input docs/openapi.yaml --output src/api/v1/schedule/schemas/generated_schemas.py --disable-timestamp
+    uv run datamodel-codegen --input docs/openapi.yaml --input-file-type openapi --output src/api/v1/schedule/schemas/generated_schemas.py --disable-timestamp
