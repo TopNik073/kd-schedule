@@ -1,4 +1,4 @@
-import os
+# ruff: noqa: N802
 from datetime import timedelta
 from pathlib import Path
 
@@ -41,7 +41,7 @@ class Settings(BaseSettings):
 
     @property
     def LOGS_DIR(self) -> Path:
-        os.makedirs(self._LOGS_DIR, exist_ok=True)
+        Path.mkdir(self._LOGS_DIR, parents=True, exist_ok=True)
         return self._LOGS_DIR
 
     # ---SERVICE SETTINGS---

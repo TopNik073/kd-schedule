@@ -1,12 +1,12 @@
-import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
+import uuid
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.database.models.BaseModel import BaseModel, get_datetime_UTC
+from src.database.models.base_model import BaseModel, get_datetime_UTC
 
 if TYPE_CHECKING:
     from src.database.models.users import Users

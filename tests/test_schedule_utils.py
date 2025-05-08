@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -14,8 +14,8 @@ def test_schedule() -> Schedules:
         user_id=uuid4(),
         medicine_name="Test Medicine",
         frequency=15,
-        start_date=datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc),
-        end_date=datetime(2025, 1, 1, 11, 0, tzinfo=timezone.utc),
+        start_date=datetime(2025, 1, 1, 10, 0, tzinfo=UTC),
+        end_date=datetime(2025, 1, 1, 11, 0, tzinfo=UTC),
     )
 
 
@@ -26,7 +26,7 @@ def test_schedule_no_end() -> Schedules:
         user_id=uuid4(),
         medicine_name="Test Medicine No End",
         frequency=30,
-        start_date=datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc),
+        start_date=datetime(2025, 1, 1, 10, 0, tzinfo=UTC),
         end_date=None,
     )
 
@@ -34,16 +34,16 @@ def test_schedule_no_end() -> Schedules:
 class TestFindNextTakings:
     def test_multiple_takings_in_interval(self, test_schedule: Schedules) -> None:
         # Test interval: 1 hour, should get 4 takings (every 15 minutes)
-        current_time = datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc)
+        current_time = datetime(2025, 1, 1, 10, 0, tzinfo=UTC)
         interval = timedelta(hours=1)
 
         takings = find_next_takings([test_schedule], interval, current_time)
 
         assert len(takings) == 4
-        assert takings[0]["next_taking_time"] == datetime(2025, 1, 1, 10, 15, tzinfo=timezone.utc)
-        assert takings[1]["next_taking_time"] == datetime(2025, 1, 1, 10, 30, tzinfo=timezone.utc)
-        assert takings[2]["next_taking_time"] == datetime(2025, 1, 1, 10, 45, tzinfo=timezone.utc)
-        assert takings[3]["next_taking_time"] == datetime(2025, 1, 1, 11, 0, tzinfo=timezone.utc)
+        assert takings[0]["next_taking_time"] == datetime(2025, 1, 1, 10, 15, tzinfo=UTC)
+        assert takings[1]["next_taking_time"] == datetime(2025, 1, 1, 10, 30, tzinfo=UTC)
+        assert takings[2]["next_taking_time"] == datetime(2025, 1, 1, 10, 45, tzinfo=UTC)
+        assert takings[3]["next_taking_time"] == datetime(2025, 1, 1, 11, 0, tzinfo=UTC)
 
     def test_takings_outside_allowed_hours(self) -> None:
         # Create schedule with takings outside allowed hours
@@ -52,11 +52,11 @@ class TestFindNextTakings:
             user_id=uuid4(),
             medicine_name="Night Medicine",
             frequency=60,
-            start_date=datetime(2025, 1, 1, 3, 0, tzinfo=timezone.utc),
-            end_date=datetime(2025, 1, 1, 5, 0, tzinfo=timezone.utc),
+            start_date=datetime(2025, 1, 1, 3, 0, tzinfo=UTC),
+            end_date=datetime(2025, 1, 1, 5, 0, tzinfo=UTC),
         )
 
-        current_time = datetime(2025, 1, 1, 3, 0, tzinfo=timezone.utc)
+        current_time = datetime(2025, 1, 1, 3, 0, tzinfo=UTC)
         interval = timedelta(hours=2)
         takings = find_next_takings([schedule], interval, current_time)
         assert len(takings) == 0
@@ -68,31 +68,31 @@ class TestFindNextTakings:
             user_id=uuid4(),
             medicine_name="Ended Medicine",
             frequency=30,
-            start_date=datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc),
-            end_date=datetime(2025, 1, 1, 11, 0, tzinfo=timezone.utc),
+            start_date=datetime(2025, 1, 1, 10, 0, tzinfo=UTC),
+            end_date=datetime(2025, 1, 1, 11, 0, tzinfo=UTC),
         )
 
-        current_time = datetime(2025, 1, 1, 12, 0, tzinfo=timezone.utc)  # After end_date
+        current_time = datetime(2025, 1, 1, 12, 0, tzinfo=UTC)  # After end_date
         interval = timedelta(hours=1)
         takings = find_next_takings([schedule], interval, current_time)
         assert len(takings) == 0
 
     def test_schedule_without_end_date(self, test_schedule_no_end: Schedules) -> None:
         # Test schedule without end_date
-        current_time = datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc)
+        current_time = datetime(2025, 1, 1, 10, 0, tzinfo=UTC)
         interval = timedelta(hours=2)  # 2 hours interval
 
         takings = find_next_takings([test_schedule_no_end], interval, current_time)
 
         assert len(takings) == 4  # Every 30 minutes for 2 hours
-        assert takings[0]["next_taking_time"] == datetime(2025, 1, 1, 10, 30, tzinfo=timezone.utc)
-        assert takings[1]["next_taking_time"] == datetime(2025, 1, 1, 11, 0, tzinfo=timezone.utc)
-        assert takings[2]["next_taking_time"] == datetime(2025, 1, 1, 11, 30, tzinfo=timezone.utc)
-        assert takings[3]["next_taking_time"] == datetime(2025, 1, 1, 12, 0, tzinfo=timezone.utc)
+        assert takings[0]["next_taking_time"] == datetime(2025, 1, 1, 10, 30, tzinfo=UTC)
+        assert takings[1]["next_taking_time"] == datetime(2025, 1, 1, 11, 0, tzinfo=UTC)
+        assert takings[2]["next_taking_time"] == datetime(2025, 1, 1, 11, 30, tzinfo=UTC)
+        assert takings[3]["next_taking_time"] == datetime(2025, 1, 1, 12, 0, tzinfo=UTC)
 
     def test_multiple_schedules(self, test_schedule: Schedules, test_schedule_no_end: Schedules):
         # Test multiple schedules
-        current_time = datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc)
+        current_time = datetime(2025, 1, 1, 10, 0, tzinfo=UTC)
         interval = timedelta(hours=1)
 
         takings = find_next_takings([test_schedule, test_schedule_no_end], interval, current_time)
@@ -108,17 +108,17 @@ class TestFindNextTakings:
             user_id=uuid4(),
             medicine_name="Future Medicine",
             frequency=30,
-            start_date=datetime(2025, 1, 1, 11, 0, tzinfo=timezone.utc),
+            start_date=datetime(2025, 1, 1, 11, 0, tzinfo=UTC),
             end_date=None,
         )
 
-        current_time = datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc)
+        current_time = datetime(2025, 1, 1, 10, 0, tzinfo=UTC)
         interval = timedelta(hours=1)
         takings = find_next_takings([future_schedule], interval, current_time)
 
         # Should only include the first taking at 11:00
         assert len(takings) == 1
-        assert takings[0]["next_taking_time"] == datetime(2025, 1, 1, 11, 0, tzinfo=timezone.utc)
+        assert takings[0]["next_taking_time"] == datetime(2025, 1, 1, 11, 0, tzinfo=UTC)
 
     def test_schedule_starting_in_one_day_after_current_time(self) -> None:
         # Test schedule that starts in one day after current time
@@ -127,13 +127,14 @@ class TestFindNextTakings:
             user_id=uuid4(),
             medicine_name="Future Medicine",
             frequency=30,
-            start_date=datetime(2025, 1, 2, 10, 0, tzinfo=timezone.utc),
+            start_date=datetime(2025, 1, 2, 10, 0, tzinfo=UTC),
             end_date=None,
         )
 
-        current_time = datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc)
+        current_time = datetime(2025, 1, 1, 10, 0, tzinfo=UTC)
         interval = timedelta(hours=1)
         takings = find_next_takings([future_schedule], interval, current_time)
+        print(takings)
 
         # Should not include any takings because the schedule starts in one day after current time
         assert len(takings) == 0

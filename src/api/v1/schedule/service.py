@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta, timezone
+# ruff: noqa: TRY003
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -23,7 +24,7 @@ logger = get_logger(__name__)
 
 
 class ScheduleService:
-    def __init__(self, user_repo: "UserRepository", schedule_repo: "ScheduleRepository"):
+    def __init__(self, user_repo: "UserRepository", schedule_repo: "ScheduleRepository") -> None:
         self._schedule_repo = schedule_repo
         self._user_repo = user_repo
 
@@ -45,12 +46,12 @@ class ScheduleService:
 
         if not create_schedule_dto.start_date:
             logger.debug("start date not found, getting it from now")
-            start_date = round_to_multiple_dt(datetime.now(timezone.utc), 15)
+            start_date = round_to_multiple_dt(datetime.now(UTC), 15)
         else:
             logger.debug("start date found")
             start_date = round_to_multiple_dt(create_schedule_dto.start_date, 15)
 
-        start_date = start_date.replace(tzinfo=timezone.utc)
+        start_date = start_date.replace(tzinfo=UTC)
 
         if not (settings.MORNING_HOUR <= start_date.hour <= settings.EVENING_HOUR):
             raise ValueError(
@@ -73,13 +74,13 @@ class ScheduleService:
         else:
             raise ValueError("Either end_date or duration must be provided")
 
-        end_date = end_date.replace(tzinfo=timezone.utc)
+        end_date = end_date.replace(tzinfo=UTC)
         if end_date < start_date:
             raise ValueError("End date must be greater than start date")
         if not (settings.MORNING_HOUR <= end_date.hour <= settings.EVENING_HOUR):
             raise ValueError(
                 f"End time must be between {settings.MORNING_HOUR}:00 and "
-                f"{settings.EVENING_HOUR}:00 (provided: {end_date.strftime('%Y-%m-%d %H:%M:%S')})"
+                f'{settings.EVENING_HOUR}:00 (provided: {end_date.strftime("%Y-%m-%d %H:%M:%S")})'
             )
 
         logger.debug(

@@ -7,7 +7,7 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from src.database.models.BaseModel import BaseModel
+from src.database.models.base_model import BaseModel
 
 MODEL_TYPE = TypeVar("MODEL_TYPE", bound=BaseModel)
 PYDANTIC_TYPE = TypeVar("PYDANTIC_TYPE", bound=PydanticBaseModel)
@@ -52,7 +52,7 @@ class IBaseRepository(Generic[MODEL_TYPE], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_all(self, **filters) -> list[MODEL_TYPE]:
+    async def get_all(self, **filters: dict[str, Any]) -> list[MODEL_TYPE]:
         """
         Get all records that match the filters.
 
@@ -82,7 +82,7 @@ class IBaseRepository(Generic[MODEL_TYPE], ABC):
 
     @abstractmethod
     async def get_all_with_relations(
-        self, relations: list[str] | None = None, **filters
+        self, relations: list[str] | None = None, **filters: dict[str, Any]
     ) -> list[MODEL_TYPE]:
         """
         Get all records with relations.
@@ -127,7 +127,7 @@ class IBaseRepository(Generic[MODEL_TYPE], ABC):
 class BaseRepository(IBaseRepository[MODEL_TYPE]):
     model: type[MODEL_TYPE]
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
     async def create(self, data: dict[str, Any] | PYDANTIC_TYPE) -> MODEL_TYPE:
@@ -152,7 +152,7 @@ class BaseRepository(IBaseRepository[MODEL_TYPE]):
         result = await self._session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_all(self, **filters) -> list[MODEL_TYPE]:
+    async def get_all(self, **filters: dict[str, Any]) -> list[MODEL_TYPE]:
         query = select(self.model)
         if filters:
             for field, value in filters.items():
@@ -171,7 +171,7 @@ class BaseRepository(IBaseRepository[MODEL_TYPE]):
         return result.scalar_one_or_none()
 
     async def get_all_with_relations(
-        self, relations: list[str] | None = None, **filters
+        self, relations: list[str] | None = None, **filters: dict[str, Any]
     ) -> list[MODEL_TYPE]:
         query = select(self.model)
         if relations:

@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 from src.core.config import settings
@@ -14,8 +14,8 @@ def round_to_multiple(value: int, multiple: int = 15) -> int:
     remainder = value % multiple
     if remainder < multiple / 2:
         return value - remainder
-    else:
-        return value + (multiple - remainder)
+
+    return value + (multiple - remainder)
 
 
 def round_to_multiple_dt(value: datetime | None, multiple: int = 15) -> datetime | None:
@@ -61,7 +61,7 @@ def find_next_takings(
     current_time: datetime | None = None,
 ) -> list[dict[str, "Schedules"]]:
     if current_time is None:
-        current_time = datetime.now(timezone.utc)
+        current_time = datetime.now(UTC)
 
     taking_end_time: datetime = current_time + next_taking_interval
 
@@ -74,15 +74,18 @@ def find_next_takings(
         if schedule.end_date and schedule.end_date < current_time:
             continue
 
-        if schedule.start_date > current_time:
-            if schedule.start_date <= taking_end_time:
-                if settings.MORNING_HOUR <= schedule.start_date.hour <= settings.EVENING_HOUR:
-                    next_takings.append(
-                        {"schedule": schedule, "next_taking_time": schedule.start_date}
-                    )
+        if (
+            current_time < schedule.start_date <= taking_end_time
+            and settings.MORNING_HOUR <= schedule.start_date.hour <= settings.EVENING_HOUR
+        ):
+            next_takings.append({"schedule": schedule, "next_taking_time": schedule.start_date})
             continue
 
         elapsed_time: float = (current_time - schedule.start_date).total_seconds() / 60
+
+        if elapsed_time < 0:
+            continue
+
         intervals_passed: int = int(elapsed_time / schedule.frequency)
         last_taking_time: datetime = schedule.start_date + timedelta(
             minutes=intervals_passed * schedule.frequency

@@ -1,9 +1,13 @@
+# ruff: noqa: N802
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+
+from grpc import ServicerContext
 
 from src.api.v1.schedule.schemas import SScheduleCreateRequest
 from src.api.v1.schedule.service import ScheduleService
 from src.database.connection import AsyncSessionMaker
-from src.grpc.schedule_pb2 import (
+from src.grpc_server.schedule_pb2 import (
     CreateScheduleRequest,
     CreateScheduleResponse,
     GetNextTakingsRequest,
@@ -15,8 +19,8 @@ from src.grpc.schedule_pb2 import (
     NextTakingInfo,
     ScheduleInfo,
 )
-from src.grpc.schedule_pb2_grpc import ScheduleServiceServicer
-from src.grpc.servicers.utils import (
+from src.grpc_server.schedule_pb2_grpc import ScheduleServiceServicer
+from src.grpc_server.servicers.utils import (
     convert_from_duration,
     convert_from_timestamp,
     convert_to_timestamp,
@@ -25,19 +29,21 @@ from src.repositories import ScheduleRepository, UserRepository
 
 
 class ScheduleServicer(ScheduleServiceServicer):
-    def __init__(self, schedule_service: ScheduleService | None = None):
+    def __init__(self, schedule_service: ScheduleService | None = None) -> None:
         super().__init__()
         self.service: ScheduleService | None = schedule_service
 
     @asynccontextmanager
-    async def get_service(self):
+    async def get_service(self) -> AsyncGenerator[ScheduleService, None]:
         if self.service is None:
             async with AsyncSessionMaker() as session:
                 user_repo: UserRepository = UserRepository(session)
                 schedule_repo: ScheduleRepository = ScheduleRepository(session)
                 yield ScheduleService(user_repo=user_repo, schedule_repo=schedule_repo)
 
-    async def CreateSchedule(self, request: CreateScheduleRequest, context):
+    async def CreateSchedule(
+        self, request: CreateScheduleRequest, _context: ServicerContext
+    ) -> CreateScheduleResponse:
         async with self.get_service() as service:
             schedule_create_dto = SScheduleCreateRequest(
                 name=request.name,
@@ -51,7 +57,9 @@ class ScheduleServicer(ScheduleServiceServicer):
             response = await service.create_schedule(schedule_create_dto)
         return CreateScheduleResponse(id=str(response))
 
-    async def GetSchedule(self, request: GetScheduleRequest, context):
+    async def GetSchedule(
+        self, request: GetScheduleRequest, _context: ServicerContext
+    ) -> GetScheduleResponse:
         async with self.get_service() as service:
             response = await service.get_schedule_by_id(request.user_id, request.schedule_id)
         return GetScheduleResponse(
@@ -63,12 +71,16 @@ class ScheduleServicer(ScheduleServiceServicer):
             )
         )
 
-    async def GetSchedulesIds(self, request: GetSchedulesIdsRequest, context):
+    async def GetSchedulesIds(
+        self, request: GetSchedulesIdsRequest, _context: ServicerContext
+    ) -> GetSchedulesIdsResponse:
         async with self.get_service() as service:
             response = await service.get_schedules_ids_by_policy(request.user_id)
         return GetSchedulesIdsResponse(schedule_ids=[str(schedule_id) for schedule_id in response])
 
-    async def GetNextTakings(self, request: GetNextTakingsRequest, context):
+    async def GetNextTakings(
+        self, request: GetNextTakingsRequest, _context: ServicerContext
+    ) -> GetNextTakingsResponse:
         async with self.get_service() as service:
             response = await service.get_next_takings(
                 request.user_id, request.next_takings_interval

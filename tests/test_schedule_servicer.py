@@ -4,13 +4,13 @@ from datetime import timedelta
 import pytest
 
 import grpc
-from src.grpc.schedule_pb2 import (
+from src.grpc_server.schedule_pb2 import (
     CreateScheduleRequest,
     GetNextTakingsRequest,
     GetScheduleRequest,
     GetSchedulesIdsRequest,
 )
-from src.grpc.schedule_pb2_grpc import ScheduleServiceStub
+from src.grpc_server.schedule_pb2_grpc import ScheduleServiceStub
 from tests.models import MedicineTest, UserTest
 
 

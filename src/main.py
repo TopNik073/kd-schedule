@@ -1,4 +1,4 @@
-import asyncio
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -7,13 +7,13 @@ from src.api.v1 import v1_router
 from src.core.config import settings
 from src.core.logger import get_logger
 from src.core.middleware import RequestLoggingMiddleware
-from src.grpc.server import GRPCServer
+from src.grpc_server.server import GRPCServer
 
 logger = get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:  # noqa: ARG001
     base_path = f"http://{settings.APP_HOST}:{settings.APP_PORT}"
     logger.info(f"API server started on {base_path}")
     logger.info(f"OpenAPI docs: {base_path}/docs")

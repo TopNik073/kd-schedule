@@ -63,7 +63,9 @@ def get_logger(name: str, level: int | str = settings.LOG_LEVEL) -> structlog.Bo
     return structlog.get_logger(name)
 
 
-def mask_sensitive_data(logger, method_name, event_dict):
+def mask_sensitive_data(
+    logger: structlog.BoundLogger, _method_name: str, event_dict: dict[str, Any]
+) -> Any:
     """Recursively mask sensitive data"""
 
     def _mask_data(data: Any) -> Any:
@@ -73,7 +75,7 @@ def mask_sensitive_data(logger, method_name, event_dict):
                 if isinstance(value, str) and value.startswith("{") and value.endswith("}"):
                     try:
                         result[key] = _mask_data(json.loads(value))
-                    except Exception as e:
+                    except json.JSONDecodeError as e:
                         logger.warning(
                             f"Error masking data: {e}",
                             exc_info=e,
@@ -90,15 +92,16 @@ def mask_sensitive_data(logger, method_name, event_dict):
                         param_name, param_value = param.split("=")
                         temp[param_name] = param_value
                     result[key] = _mask_data(temp)
-                elif isinstance(value, (dict, list)):
+                elif isinstance(value, dict | list):
                     result[key] = _mask_data(value)
                 else:
                     result[key] = value
             return result
-        elif isinstance(data, list):
+
+        if isinstance(data, list):
             return [_mask_data(item) for item in data]
-        else:
-            return data
+
+        return data
 
     if "context" in event_dict:
         event_dict["context"] = _mask_data(event_dict["context"])

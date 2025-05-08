@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.grpc.server import GRPCServer
+from src.grpc_server.server import GRPCServer
 from tests.models import MedicineTest, UserTest
 
 

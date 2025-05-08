@@ -4,8 +4,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query
 
-from .dependencies import SCHEDULE_SERVICE_DEPENDENCY
-from .schemas import (
+from src.api.v1.schedule.dependencies import SCHEDULE_SERVICE_DEPENDENCY
+from src.api.v1.schedule.schemas import (
     SGetNextTakingsResponse,
     SGetScheduleResponse,
     SScheduleCreateRequest,

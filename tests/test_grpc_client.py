@@ -9,8 +9,8 @@ from datetime import datetime, timedelta
 from google.protobuf.timestamp_pb2 import Timestamp
 
 import grpc
-from src.grpc.schedule_pb2 import CreateScheduleRequest
-from src.grpc.schedule_pb2_grpc import ScheduleServiceStub
+from src.grpc_server.schedule_pb2 import CreateScheduleRequest
+from src.grpc_server.schedule_pb2_grpc import ScheduleServiceStub
 
 
 async def create_schedule():
