@@ -1,6 +1,6 @@
 # ruff: noqa: TRY003
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from fastapi import HTTPException
@@ -53,12 +53,6 @@ class ScheduleService:
 
         start_date = start_date.replace(tzinfo=UTC)
 
-        if not (settings.MORNING_HOUR <= start_date.hour <= settings.EVENING_HOUR):
-            raise ValueError(
-                f"Start time must be between {settings.MORNING_HOUR}:00 "
-                f"and {settings.EVENING_HOUR}:00"
-            )
-
         end_date = create_schedule_dto.end_date
 
         if end_date and end_date.year == 1970:
@@ -77,11 +71,6 @@ class ScheduleService:
         end_date = end_date.replace(tzinfo=UTC)
         if end_date < start_date:
             raise ValueError("End date must be greater than start date")
-        if not (settings.MORNING_HOUR <= end_date.hour <= settings.EVENING_HOUR):
-            raise ValueError(
-                f"End time must be between {settings.MORNING_HOUR}:00 and "
-                f'{settings.EVENING_HOUR}:00 (provided: {end_date.strftime("%Y-%m-%d %H:%M:%S")})'
-            )
 
         logger.debug(
             "Checks are completed, start creating of schedule",
@@ -124,11 +113,12 @@ class ScheduleService:
         self,
         medicine_policy: int,
         next_takings_interval: timedelta = settings.NEXT_TAKING_TIMING,
-    ) -> list[dict[str, "Schedules"]]:
+    ) -> list[dict[str, Any]]:
         user_schedules: list[Schedules] = await self.get_schedules_by_policy(medicine_policy)
         return find_next_takings(
             user_schedules,
             next_takings_interval,
+            settings,
         )
 
     async def get_next_takings_with_model(

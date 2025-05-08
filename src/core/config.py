@@ -1,5 +1,5 @@
 # ruff: noqa: N802
-from datetime import timedelta
+from datetime import time, timedelta
 from pathlib import Path
 
 from pydantic import PostgresDsn
@@ -47,8 +47,8 @@ class Settings(BaseSettings):
     # ---SERVICE SETTINGS---
     NEXT_TAKING_TIMING: timedelta = timedelta(hours=1)
 
-    MORNING_HOUR: int = 8
-    EVENING_HOUR: int = 22
+    MORNING_TIME: time = time(8, 0)
+    EVENING_TIME: time = time(22, 0)
 
 
 settings = Settings()
