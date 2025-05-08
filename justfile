@@ -14,6 +14,14 @@ check:
     uv run ruff check .
     uv run black . --check
 
+[group('linters')]
+uv-fix:
+    uv run ruff check . --fix
+
+[group('linters')]
+black-fix:
+    uv run black .
+
 # Run all tests (without coverage)
 [group('testing')]
 test-all:

@@ -2,16 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.grpc_server.server import GRPCServer
 from tests.models import MedicineTest, UserTest
-
-
-@pytest.fixture(scope="session", autouse=True)
-async def start_grpc_server():
-    server = GRPCServer(50051)
-    await server.start()
-    yield server
-    await server.stop()
 
 
 @pytest.fixture(scope="module")

@@ -13,6 +13,16 @@ from src.grpc_server.schedule_pb2 import (
 from src.grpc_server.schedule_pb2_grpc import ScheduleServiceStub
 from tests.models import MedicineTest, UserTest
 
+from src.grpc_server.server import GRPCServer
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def start_grpc_server():
+    server = GRPCServer(50051)
+    await server.start()
+    yield server
+    await server.stop()
+
 
 @pytest.mark.asyncio(loop_scope="session")
 class TestScheduleServicer:
