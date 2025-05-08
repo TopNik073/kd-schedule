@@ -11,6 +11,9 @@ logger = get_logger(__name__)
 
 
 def round_to_multiple(value: int, multiple: int = 15) -> int:
+    if value <= multiple:
+        return multiple
+
     if value % multiple == 0:
         return value
 
