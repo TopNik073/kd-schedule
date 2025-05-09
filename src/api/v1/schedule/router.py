@@ -37,7 +37,9 @@ async def create_schedule(
     If start_date is provided, it will use start_date.
     """
     schedule_id = await schedule_service.create_schedule(create_schedule_dto)
-    return SuccessResponseSScheduleCreateResponse(data=SScheduleCreateResponse(id=schedule_id))
+    return SuccessResponseSScheduleCreateResponse(
+        data=SScheduleCreateResponse(schedule_id=schedule_id)
+    )
 
 
 @router.get("/schedules")
@@ -68,6 +70,7 @@ async def get_schedule(
             frequency=schedule.frequency,
             start_date=schedule.start_date,
             end_date=schedule.end_date,
+            schedule_id=schedule.id,
         )
     )
 

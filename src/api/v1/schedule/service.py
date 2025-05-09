@@ -136,6 +136,7 @@ class ScheduleService:
                 frequency=taking["schedule"].frequency,
                 start_date=taking["schedule"].start_date,
                 end_date=taking["schedule"].end_date,
+                schedule_id=taking["schedule"].id,
                 next_taking_time=taking["next_taking_time"],
             )
             for taking in next_takings

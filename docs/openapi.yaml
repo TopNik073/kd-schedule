@@ -135,6 +135,10 @@ components:
     SGetNextTakingsResponse:
       type: object
       properties:
+        schedule_id:
+          type: string
+          format: uuid
+          title: Schedule UUID
         end_date:
           type: string
           format: date-time
@@ -162,12 +166,17 @@ components:
         - medicine_name
         - frequency
         - next_taking_time
+        - schedule_id
       title: SGetNextTakingsResponse
       x-stoplight:
         id: g08i1525fzw6p
     SGetScheduleResponse:
       type: object
       properties:
+        schedule_id:
+          type: string
+          format: uuid
+          title: Schedule UUID
         end_date:
           type: string
           format: date-time
@@ -190,6 +199,7 @@ components:
       required:
         - medicine_name
         - frequency
+        - schedule_id
       title: SGetScheduleResponse
       x-stoplight:
         id: 1gxvb58x72y8x
@@ -238,12 +248,12 @@ components:
     SScheduleCreateResponse:
       type: object
       properties:
-        id:
+        schedule_id:
           type: string
           format: uuid
-          title: Id
+          title: Schedule UUID
       required:
-        - id
+        - schedule_id
       title: SScheduleCreateResponse
       x-stoplight:
         id: fg5uw5ugm5kn0

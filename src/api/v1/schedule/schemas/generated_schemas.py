@@ -32,6 +32,7 @@ class ValidationError(BaseModel):
 
 
 class SGetNextTakingsResponse(BaseModel):
+    schedule_id: UUID = Field(..., title='Schedule UUID')
     end_date: Optional[datetime] = Field(
         None, description='timezone is always UTC', title='End Date'
     )
@@ -44,6 +45,7 @@ class SGetNextTakingsResponse(BaseModel):
 
 
 class SGetScheduleResponse(BaseModel):
+    schedule_id: UUID = Field(..., title='Schedule UUID')
     end_date: Optional[datetime] = Field(
         None, description='timezone is always UTC', title='End Date'
     )
@@ -69,7 +71,7 @@ class SScheduleCreateRequest(BaseModel):
 
 
 class SScheduleCreateResponse(BaseModel):
-    id: UUID = Field(..., title='Id')
+    schedule_id: UUID = Field(..., title='Schedule UUID')
 
 
 class SuccessResponseSGetScheduleResponse(SuccessResponseSchema):
