@@ -116,12 +116,20 @@ def find_next_takings(
                 break
 
             next_taking_time_of_day = next_taking_time.time()
-            if not (config.MORNING_TIME <= next_taking_time_of_day <= config.EVENING_TIME):
-                logger.debug(
-                    f"Next taking time {next_taking_time} is not in the allowed hours, searching for next taking"
-                )
-                next_taking_time += timedelta(minutes=schedule.frequency)
-                continue
+            if config.EVENING_TIME > config.MORNING_TIME:
+                if not (config.MORNING_TIME <= next_taking_time_of_day <= config.EVENING_TIME):
+                    logger.debug(
+                        f"Next taking time {next_taking_time} is not in the allowed hours, searching for next taking"
+                    )
+                    next_taking_time += timedelta(minutes=schedule.frequency)
+                    continue
+            else:
+                if not (next_taking_time_of_day > config.MORNING_TIME or next_taking_time_of_day < config.EVENING_TIME):
+                    logger.debug(
+                        f"Next taking time {next_taking_time} is not in the allowed hours, searching for next taking"
+                    )
+                    next_taking_time += timedelta(minutes=schedule.frequency)
+                    continue
 
             logger.debug(
                 f"Next taking time {next_taking_time} is in the allowed hours, adding to next takings"
