@@ -14,7 +14,7 @@ def get_test_user():
 def get_test_medicine():
     return MedicineTest(
         medicine_name="E2E Test Medicine",
-        frequency=60,
+        frequency=30,
         start_date=datetime.now(),
         end_date=datetime.now() + timedelta(days=7),
         duration=timedelta(days=7),

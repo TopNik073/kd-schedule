@@ -32,12 +32,17 @@ test-all-coverage:
 # Run e2e tests for grpc server
 [group('testing')]
 test-grpc:
-    uv run pytest tests/test_schedule_servicer.py
+    uv run pytest tests/test_schedule_servicer.py -s -v
+
+# Run e2e tests for API
+[group('testing')]
+test-api:
+    uv run pytest tests/test_schedule_api.py -s -v
 
 # Run unit tests for next takings feature
 [group('testing')]
 test-next-takings:
-    uv run pytest tests/test_schedule_utils.py
+    uv run pytest tests/test_schedule_utils.py -s -v
 
 # Start the application in docker
 [group('docker')]
