@@ -18,10 +18,10 @@ except ImportError:
 
 if _version_not_supported:
     raise RuntimeError(
-        f"The grpc_server package installed is at version {GRPC_VERSION},"
+        f"The grpc package installed is at version {GRPC_VERSION},"
         + f" but the generated code in schedule_pb2_grpc.py depends on"
         + f" grpcio>={GRPC_GENERATED_VERSION}."
-        + f" Please upgrade your grpc_server module to grpcio>={GRPC_GENERATED_VERSION}"
+        + f" Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}"
         + f" or downgrade your generated code using grpcio-tools<={GRPC_VERSION}."
     )
 
@@ -33,7 +33,7 @@ class ScheduleServiceStub(object):
         """Constructor.
 
         Args:
-            channel: A grpc_server.Channel.
+            channel: A grpc.Channel.
         """
         self.CreateSchedule = channel.unary_unary(
             "/schedule.ScheduleService/CreateSchedule",
