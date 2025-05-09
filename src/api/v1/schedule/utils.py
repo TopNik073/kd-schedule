@@ -61,7 +61,7 @@ def round_to_multiple_dt(value: datetime | None, multiple: int = 15) -> datetime
     return result.replace(minute=new_minutes)
 
 
-def find_next_takings(
+def find_next_takings(  # noqa: PLR0912
     schedules: list["Schedules"],
     next_taking_interval: timedelta,
     config: Settings,
@@ -123,13 +123,15 @@ def find_next_takings(
                     )
                     next_taking_time += timedelta(minutes=schedule.frequency)
                     continue
-            else:
-                if not (next_taking_time_of_day > config.MORNING_TIME or next_taking_time_of_day < config.EVENING_TIME):
-                    logger.debug(
-                        f"Next taking time {next_taking_time} is not in the allowed hours, searching for next taking"
-                    )
-                    next_taking_time += timedelta(minutes=schedule.frequency)
-                    continue
+            elif not (
+                next_taking_time_of_day > config.MORNING_TIME
+                or next_taking_time_of_day < config.EVENING_TIME
+            ):
+                logger.debug(
+                    f"Next taking time {next_taking_time} is not in the allowed hours, searching for next taking"
+                )
+                next_taking_time += timedelta(minutes=schedule.frequency)
+                continue
 
             logger.debug(
                 f"Next taking time {next_taking_time} is in the allowed hours, adding to next takings"
