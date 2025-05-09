@@ -1,15 +1,34 @@
-README.md
+# Git
 .git
 .github
 .gitignore
 .gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
 .venv
 .env.template
+
+# Testing
 pytest.ini
-.vscode
-.ruff_cache
 .pytest_cache
+tests/
+.coverage
+htmlcov/
+coverage.xml
+
+# IDE
+.vscode
 .idea
+
+# Project specific
+.ruff_cache
 .db_homework
 .diagrams
-.tests
+README.md
+
+# Docker
+Dockerfile*
+docker-compose*
