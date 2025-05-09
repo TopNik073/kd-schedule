@@ -21,6 +21,7 @@ dependencies = [
     "grpcio==1.71.0",
     "grpcio-tools==1.71.0",
     "h11==0.14.0",
+    "httpx>=0.28.1",
     "idna==3.10",
     "inflect==7.5.0",
     "iniconfig==2.1.0",
