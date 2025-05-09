@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, time, timedelta
+from datetime import UTC, datetime, time, timedelta, tzinfo
 from typing import Callable
 from uuid import uuid4
 
@@ -179,6 +179,21 @@ class TestFindNextTakings:
         # Should only include the first taking at 11:00
         assert len(takings) == 1
         assert takings[0]["next_taking_time"] == datetime(2025, 1, 1, 11, 0, tzinfo=UTC)
+
+    def test_schedule_start_in_interval(
+        self, schedule_factory: Callable[..., Schedules], test_config: Settings
+    ) -> None:
+        schedule = schedule_factory(
+            medicine_name="Test Schedule Start In Interval",
+            frequency=30,
+            start_date=datetime(2025, 1, 1, 12, 0, tzinfo=UTC),
+            end_date=None,
+        )
+        current_time = datetime(2025, 1, 1, 11, 57, tzinfo=UTC)
+        interval = timedelta(minutes=30)
+        takings = find_next_takings([schedule], interval, test_config, current_time)
+        assert len(takings) == 1
+        assert takings[0]["next_taking_time"] == datetime(2025, 1, 1, 12, 0, tzinfo=UTC)
 
     def test_schedule_starting_in_one_day_after_current_time(
         self, schedule_factory: Callable[..., Schedules], test_config: Settings
