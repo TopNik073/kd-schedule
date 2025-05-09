@@ -46,10 +46,10 @@ class ScheduleService:
 
         if not create_schedule_dto.start_date:
             logger.debug("start date not found, getting it from now")
-            start_date = round_to_multiple_dt(datetime.now(UTC), 15)
+            start_date = datetime.now(UTC), 15
         else:
             logger.debug("start date found")
-            start_date = round_to_multiple_dt(create_schedule_dto.start_date, 15)
+            start_date = create_schedule_dto.start_date
 
         start_date = start_date.replace(tzinfo=UTC)
 
@@ -68,6 +68,7 @@ class ScheduleService:
         else:
             raise ValueError("Either end_date or duration must be provided")
 
+        start_date = round_to_multiple_dt(start_date, 15)
         end_date = end_date.replace(tzinfo=UTC)
         if end_date < start_date:
             raise ValueError("End date must be greater than start date")
