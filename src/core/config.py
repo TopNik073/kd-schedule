@@ -1,11 +1,13 @@
-from pydantic_settings import BaseSettings
-from pydantic import PostgresDsn
-import os
-from datetime import timedelta
+# ruff: noqa: N802
+from datetime import time, timedelta
 from pathlib import Path
+
+from pydantic import PostgresDsn
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
     APP_NAME: str = "kd-schedule"
     DEBUG: bool = False
 
@@ -29,7 +31,8 @@ class Settings(BaseSettings):
     LOG_SENSITIVE_DATA: list[str] = ["name"]
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = (
-        "%(asctime)s | %(levelname)-8s | %(name)s | [%(filename)s:%(funcName)s:%(lineno)d] - %(message)s"
+        "%(asctime)s | %(levelname)-8s | %(name)s | "
+        "[%(filename)s:%(funcName)s:%(lineno)d] - %(message)s"
     )
     LOG_DATE_FORMAT: str = "%Y-%m-%d %H:%M:%S.%f"
 
@@ -38,14 +41,14 @@ class Settings(BaseSettings):
 
     @property
     def LOGS_DIR(self) -> Path:
-        os.makedirs(self._LOGS_DIR, exist_ok=True)
+        Path.mkdir(self._LOGS_DIR, parents=True, exist_ok=True)
         return self._LOGS_DIR
 
     # ---SERVICE SETTINGS---
     NEXT_TAKING_TIMING: timedelta = timedelta(hours=1)
 
-    MORNING_HOUR: int = 8
-    EVENING_HOUR: int = 22
+    MORNING_TIME: time = time(8, 0)
+    EVENING_TIME: time = time(22, 0)
 
 
 settings = Settings()

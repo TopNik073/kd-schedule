@@ -1,0 +1,172 @@
+[project]
+name = "kd-schedule"
+version = "0.1.0"
+description = "Python package for the schedule service"
+readme = "README.md"
+requires-python = ">=3.12"
+
+dependencies = [
+    "alembic==1.15.1",
+    "annotated-types==0.7.0",
+    "anyio==4.8.0",
+    "argcomplete==3.6.2",
+    "asyncpg==0.30.0",
+    "black==25.1.0",
+    "click==8.1.8",
+    "colorama==0.4.6",
+    "datamodel-code-generator==0.30.0",
+    "fastapi==0.115.11",
+    "genson==1.3.0",
+    "greenlet==3.1.1",
+    "grpcio==1.71.0",
+    "grpcio-tools==1.71.0",
+    "h11==0.14.0",
+    "httpx>=0.28.1",
+    "idna==3.10",
+    "inflect==7.5.0",
+    "iniconfig==2.1.0",
+    "isort==6.0.1",
+    "jinja2==3.1.6",
+    "mako==1.3.9",
+    "markupsafe==3.0.2",
+    "more-itertools==10.7.0",
+    "mypy-extensions==1.0.0",
+    "packaging==24.2",
+    "pathspec==0.12.1",
+    "platformdirs==4.3.6",
+    "pluggy==1.5.0",
+    "protobuf==5.29.4",
+    "psycopg2==2.9.10",
+    "pydantic==2.10.6",
+    "pydantic-core==2.27.2",
+    "pydantic-settings==2.8.1",
+    "pytest==8.3.5",
+    "pytest-asyncio==0.26.0",
+    "pytest-cov>=6.1.1",
+    "python-dotenv==1.0.1",
+    "pyyaml==6.0.2",
+    "ruff==0.11.8",
+    "setuptools==78.1.0",
+    "sniffio==1.3.1",
+    "sqlalchemy==2.0.39",
+    "starlette==0.46.1",
+    "structlog==25.3.0",
+    "typeguard==4.4.2",
+    "types-protobuf==5.29.1.20250403",
+    "typing-extensions==4.12.2",
+    "uvicorn==0.34.0",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+src/api/v1/schedule/schemas/generated_schemas.py|
+src/grpc/schedule_pb2.py|
+src/grpc/schedule_pb2_grpc.py
+'''
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+exclude = [
+    "src/api/v1/schedule/schemas/generated_schemas.py",
+    "src/grpc_server/schedule_pb2.py",
+    "src/grpc_server/schedule_pb2_grpc.py",
+    "docs",
+    "alembic",
+    "tests/*.py"
+]
+lint.ignore = [
+  "EM101", "EM102", # Exception must not use string/f-string literal, assign to variable first
+  "G004", # Logging statement uses f-string
+  "PLR2004", # Magic value used in comparison instead of a constant variable
+  "A002", # Function argument is shadowing a Python builtin
+  "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
+  "PLR0913", # Too many arguments to function call
+  "RUF001", # Docstring contains ambiguous chars
+  "RUF002", # Docstring contains ambiguous chars
+  "RUF003", # Docstring contains ambiguous chars
+  "S101",   # Use assert
+  "N818",
+]
+lint.flake8-tidy-imports.ban-relative-imports = "all"
+lint.mccabe.max-complexity = 20
+lint.select = [
+  "F", # Pyflakes
+  "C90", # mccabe
+  "I", # isort
+  "N", # pep8-naming
+  # "D", # pydocstyle
+  "UP", # pyupgrade
+  "YTT", # flake8-2020
+  "ANN", # flake8-annotations
+  "ASYNC", # flake8-async
+  "S", # flake8-bandit
+  "BLE", # flake8-blind-except
+  # "FBT", # flake8-boolean-trap
+  "B", # flake8-bugbear
+  "A", # flake8-builtins
+  #  "COM", # flake8-commas
+  # "CPY", # flake8-copyright
+  "C4", # flake8-comprehensions
+  # "DTZ", # flake8-datetimez
+  "T10", # flake8-debugger
+  # "DJ", # flake8-django
+  "EM", # flake8-errmsg
+  "EXE", # flake8-executable
+  # "ISC", # flake8-implicit-str-concat
+  "ICN", # flake8-import-conventions
+  "G", # flake8-logging-format
+  "INP", # flake8-no-pep420
+  "PIE", # flake8-pie
+  "T20", # flake8-print
+  # "PYI", # flake8-pyi
+  # "PT", # flake8-pytest-style
+  # "Q", # flake8-quotes
+  "RSE", # flake8-raise
+  "RET", # flake8-return
+  "SLF", # flake8-self
+  "SLOT", # flake8-slots
+  "SIM", # flake8-simplify
+  "TID", # flake8-tidy-imports
+  "TCH", # flake8-type-checking
+  "INT", # flake8-gettext
+  "ARG", # flake8-unused-arguments
+  "PTH", # flake8-use-pathlib
+  "TD", # flake8-todos
+  "FIX", # flake8-fixme
+  "ERA", # eradicate
+  # "PD", # pandas-vet
+  "PGH", # pygrep-hooks
+  "PL", # Pylint
+  "TRY", # tryceratops
+  "FLY", # flynt
+  # "NPY", # NumPy-specific rules
+  # "AIR", # Airflow
+  "PERF", # Perflint
+  "FURB", # refurb
+  "LOG", # flake8-logging
+  "RUF", # Ruff-specific rules
+]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+combine-as-imports = true
+order-by-type = true
+split-on-trailing-comma = true
+
+[tool.coverage.run]
+branch = true
+omit = ["tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == '__main__'",
+    "raise NotImplementedError",
+    "return NotImplemented"
+]

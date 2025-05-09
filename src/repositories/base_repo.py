@@ -1,14 +1,13 @@
-from typing import Generic, TypeVar, Any
 from abc import ABC, abstractmethod
-
+from typing import Any, Generic, TypeVar
 from uuid import UUID
 
+from pydantic import BaseModel as PydanticBaseModel
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete
 from sqlalchemy.orm import joinedload
 
-from src.database.models.BaseModel import BaseModel
-from pydantic import BaseModel as PydanticBaseModel
+from src.database.models.base_model import BaseModel
 
 MODEL_TYPE = TypeVar("MODEL_TYPE", bound=BaseModel)
 PYDANTIC_TYPE = TypeVar("PYDANTIC_TYPE", bound=PydanticBaseModel)
@@ -53,7 +52,7 @@ class IBaseRepository(Generic[MODEL_TYPE], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_all(self, **filters) -> list[MODEL_TYPE]:
+    async def get_all(self, **filters: dict[str, Any]) -> list[MODEL_TYPE]:
         """
         Get all records that match the filters.
 
@@ -83,7 +82,7 @@ class IBaseRepository(Generic[MODEL_TYPE], ABC):
 
     @abstractmethod
     async def get_all_with_relations(
-        self, relations: list[str] | None = None, **filters
+        self, relations: list[str] | None = None, **filters: dict[str, Any]
     ) -> list[MODEL_TYPE]:
         """
         Get all records with relations.
@@ -128,7 +127,7 @@ class IBaseRepository(Generic[MODEL_TYPE], ABC):
 class BaseRepository(IBaseRepository[MODEL_TYPE]):
     model: type[MODEL_TYPE]
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
     async def create(self, data: dict[str, Any] | PYDANTIC_TYPE) -> MODEL_TYPE:
@@ -144,7 +143,7 @@ class BaseRepository(IBaseRepository[MODEL_TYPE]):
         return obj
 
     async def get_by_id(self, id: UUID) -> MODEL_TYPE:
-        query = select(self.model).where(getattr(self.model, "id") == id)
+        query = select(self.model).where(self.model.id == id)
         result = await self._session.execute(query)
         return result.scalar_one_or_none()
 
@@ -153,7 +152,7 @@ class BaseRepository(IBaseRepository[MODEL_TYPE]):
         result = await self._session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_all(self, **filters) -> list[MODEL_TYPE]:
+    async def get_all(self, **filters: dict[str, Any]) -> list[MODEL_TYPE]:
         query = select(self.model)
         if filters:
             for field, value in filters.items():
@@ -164,7 +163,7 @@ class BaseRepository(IBaseRepository[MODEL_TYPE]):
     async def get_by_id_with_relations(
         self, id: UUID, relations: list[str] | None = None
     ) -> MODEL_TYPE:
-        query = select(self.model).where(getattr(self.model, "id") == id)
+        query = select(self.model).where(self.model.id == id)
         if relations:
             for relation in relations:
                 query = query.options(joinedload(getattr(self.model, relation)))
@@ -172,7 +171,7 @@ class BaseRepository(IBaseRepository[MODEL_TYPE]):
         return result.scalar_one_or_none()
 
     async def get_all_with_relations(
-        self, relations: list[str] | None = None, **filters
+        self, relations: list[str] | None = None, **filters: dict[str, Any]
     ) -> list[MODEL_TYPE]:
         query = select(self.model)
         if relations:
@@ -188,19 +187,14 @@ class BaseRepository(IBaseRepository[MODEL_TYPE]):
         if isinstance(data, PydanticBaseModel):
             data = data.model_dump()
 
-        query = (
-            update(self.model)
-            .where(getattr(self.model, "id") == id)
-            .values(**data)
-            .returning(self.model)
-        )
+        query = update(self.model).where(self.model.id == id).values(**data).returning(self.model)
         result = await self._session.execute(query)
         if not self._session.in_transaction():
             await self._session.commit()
         return result.scalar_one_or_none()
 
     async def delete(self, id: UUID) -> bool:
-        query = delete(self.model).where(getattr(self.model, "id") == id)
+        query = delete(self.model).where(self.model.id == id)
         result = await self._session.execute(query)
         if not self._session.in_transaction():
             await self._session.commit()

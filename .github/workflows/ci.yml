@@ -1,0 +1,102 @@
+name: Test and lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint (Ruff)
+    runs-on: ubuntu-latest
+    env:
+      UV_SYSTEM_PYTHON: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          python-version-file: 'pyproject.toml'
+
+      - name: Install ruff
+        run: uv pip install ruff
+
+      - name: Run ruff
+        run: ruff check .
+
+  format:
+    name: Check formatting (Black)
+    runs-on: ubuntu-latest
+    env:
+      UV_SYSTEM_PYTHON: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          python-version-file: 'pyproject.toml'
+
+      - name: Install black
+        run: uv pip install black
+
+      - name: Run black
+        run: black --check .
+
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.2
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DB_USER: test_user
+      DB_PASS: test_password
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: test_db
+      UV_SYSTEM_PYTHON: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "pyproject.toml"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          python-version-file: 'pyproject.toml'
+
+      - name: Install dependencies
+        run: uv pip install -e .
+
+      - name: Run migrations
+        run: alembic upgrade head
+
+      - name: Run tests
+        run: pytest

@@ -1,33 +1,42 @@
-FROM python:3.12-slim
+FROM python:3.12-slim AS base
+ENV PYTHONFAULTHANDLER=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_DEFAULT_TIMEOUT=100 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1
+WORKDIR /app_dir
 
-WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    netcat-traditional \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install dependencies for psycopg2
-RUN apt-get update && apt-get install -y \
+FROM base AS builder
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     libpq-dev \
     gcc \
-    python3-dev
+    python3-dev && \
+    rm -rf /var/lib/apt/lists/*
 
-# Create logs directory with proper permissions
-RUN mkdir -p /app/logs && chmod 777 /app/logs
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Copy the requirements file
-COPY requirements.txt .
-
-# Install dependencies
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-
-# Copy the source code
+# Copy project files
 COPY . .
 
-# Run migrations and start the application
-CMD while ! nc -z db 5432; do sleep 0.1; done && \
-    alembic upgrade head && \
+# Install dependencies and project
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-editable
+
+FROM base AS final
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libpq5 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the virtual environment and project files from builder
+COPY --from=builder /app_dir/.venv ./.venv
+COPY --from=builder /app_dir .
+
+# Set up the environment
+ENV PATH="/app_dir/.venv/bin:$PATH"
+ENV VIRTUAL_ENV="/app_dir/.venv"
+
+CMD alembic upgrade head && \
     uvicorn src.main:app --host 0.0.0.0 --port 8000 --log-level error

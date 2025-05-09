@@ -1,10 +1,11 @@
+from collections.abc import Callable
 import time
+from typing import Any, Literal
 import uuid
-from typing import Literal
 
-from fastapi import HTTPException
-from fastapi import Request, Response
+from fastapi import HTTPException, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
+
 from src.core.logger import get_logger
 
 logger = get_logger(__name__)
@@ -16,7 +17,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     Logs information about the request, execution time, and response status.
     """
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
         context = await self.get_context(request)
         await logger.ainfo(
             f"Request started on {request.method} {request.url.path}", context=context
@@ -26,6 +27,19 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         try:
             response = await call_next(request)
+        except ValueError as e:
+            await self.create_final_log("failed", request, context, start_time, 400, e)
+            raise HTTPException(status_code=400, detail=str(e)) from e
+
+        except HTTPException as e:
+            await self.create_final_log("failed", request, context, start_time, e.status_code, e)
+            raise
+
+        except Exception as e:
+            await self.create_final_log("failed", request, context, start_time, 500, e)
+            raise HTTPException(status_code=500, detail="Internal server error") from e
+
+        else:
             response_size = self.get_response_size(response)
             context["response_size"] = response_size
 
@@ -38,30 +52,20 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
             return response
 
-        except ValueError as e:
-            await self.create_final_log("failed", request, context, start_time, 400, e)
-            raise HTTPException(status_code=400, detail=str(e))
-
-        except HTTPException as e:
-            await self.create_final_log("failed", request, context, start_time, e.status_code, e)
-            raise
-
-        except Exception as e:
-            await self.create_final_log("failed", request, context, start_time, 500, e)
-            raise HTTPException(status_code=500, detail="Internal server error")
-
     @staticmethod
-    def get_response_size(response: Response):
+    def get_response_size(response: Response) -> int:
         try:
             response_size = response.headers.get("Content-Length")
-            if response_size:
-                response_size = int(response_size)
-            else:
-                response_size = len(response.body)
+            response_size = int(response_size) if response_size else len(response.body)
 
-            return response_size
-        except:
+        except Exception as e:  # noqa: BLE001
+            logger.warning(
+                f"Error getting response size: {e}",
+                exc_info=e,
+            )
             return 0
+        else:
+            return response_size
 
     @staticmethod
     async def create_final_log(
@@ -87,7 +91,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             )
 
     @staticmethod
-    async def get_context(request: Request):
+    async def get_context(request: Request) -> dict[str, Any]:
         trace_id = str(uuid.uuid4())
         body = await request.body()
         body = body.decode()

@@ -18,6 +18,7 @@ components:
           title: Error
       required:
         - success
+        - error
       title: ResponseSchema
       x-stoplight:
         id: q5e86jay8yoff
@@ -29,22 +30,19 @@ components:
             success:
               type: boolean
               default: true
+            error:
+              type: string
+              nullable: true
+              default: null
+            data:
+              oneOf:
+                - type: object
+                - type: array
+          required:
+            - data
           title: SuccessResponseSchema
       x-stoplight:
         id: tcs5iahh4xwus
-    ErrorResponseSchema:
-      allOf:
-        - $ref: '#/components/schemas/ResponseSchema'
-        - type: object
-          properties:
-            success:
-              type: boolean
-              default: false
-            data:
-              nullable: true
-          title: ErrorResponseSchema
-      x-stoplight:
-        id: nizy02gzhpwg3
     SuccessResponse_SGetScheduleResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessResponseSchema'
@@ -137,6 +135,10 @@ components:
     SGetNextTakingsResponse:
       type: object
       properties:
+        schedule_id:
+          type: string
+          format: uuid
+          title: Schedule UUID
         end_date:
           type: string
           format: date-time
@@ -164,12 +166,17 @@ components:
         - medicine_name
         - frequency
         - next_taking_time
+        - schedule_id
       title: SGetNextTakingsResponse
       x-stoplight:
         id: g08i1525fzw6p
     SGetScheduleResponse:
       type: object
       properties:
+        schedule_id:
+          type: string
+          format: uuid
+          title: Schedule UUID
         end_date:
           type: string
           format: date-time
@@ -192,6 +199,7 @@ components:
       required:
         - medicine_name
         - frequency
+        - schedule_id
       title: SGetScheduleResponse
       x-stoplight:
         id: 1gxvb58x72y8x
@@ -240,12 +248,12 @@ components:
     SScheduleCreateResponse:
       type: object
       properties:
-        id:
+        schedule_id:
           type: string
           format: uuid
-          title: Id
+          title: Schedule UUID
       required:
-        - id
+        - schedule_id
       title: SScheduleCreateResponse
       x-stoplight:
         id: fg5uw5ugm5kn0
