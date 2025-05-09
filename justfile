@@ -8,19 +8,16 @@ default:
 format:
     uv run black .
 
-# Check code formatting
+# Check code formatting with Black and ruff
 [group('linters')]
 check:
     uv run ruff check .
     uv run black . --check
 
+# Fix code formatting with ruff
 [group('linters')]
 uv-fix:
     uv run ruff check . --fix
-
-[group('linters')]
-black-fix:
-    uv run black .
 
 # Run all tests (without coverage)
 [group('testing')]
@@ -50,7 +47,7 @@ docker-start:
 # Start the application locally
 [group('app')]
 app-start:
-    uv run src\main.py
+    uv run python -m src.main
 
 # Generate schemas from openapi.yaml (codegeneration)
 [group('app')]
