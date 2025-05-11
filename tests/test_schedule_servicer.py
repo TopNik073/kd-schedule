@@ -63,7 +63,7 @@ class TestScheduleServicer:
         # Step 4: Get the next takings
         await self._get_next_takings(self.stub, get_test_user)
 
-        # TODO: Sometimes the next takings are empty for some reason. 
+        # TODO: Sometimes the next takings are empty for some reason.
         # Probably beacuse of rounding the start_date (but this case is handled by the tests/test_schedule_utils.py::test_schedule_start_in_interval)
         # assert len(next_takings) >= 1
 
