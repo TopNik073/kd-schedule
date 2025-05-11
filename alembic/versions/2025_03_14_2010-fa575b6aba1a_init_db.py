@@ -31,6 +31,7 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("id"),
+        sa.UniqueConstraint("medicine_policy"),
     )
     op.create_table(
         "schedules",
