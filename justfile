@@ -16,7 +16,7 @@ check:
 
 # Fix code formatting with ruff
 [group('linters')]
-uv-fix:
+ruff-fix:
     uv run ruff check . --fix
 
 # Run all tests (without coverage)

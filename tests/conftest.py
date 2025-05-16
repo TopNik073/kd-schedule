@@ -15,6 +15,7 @@ alembic_cfg = Config("alembic.ini")
 dotenv.load_dotenv()
 DB_ORIGINAL_NAME = os.getenv("DB_NAME")
 
+
 @contextmanager
 def get_db_connection(dbname: str = "postgres"):
     """Get a database connection with specified database name."""
