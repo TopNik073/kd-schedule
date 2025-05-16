@@ -12,8 +12,11 @@ from tests.models import MedicineTest, UserTest
 
 alembic_cfg = Config("alembic.ini")
 
-dotenv.load_dotenv()
-DB_ORIGINAL_NAME = os.getenv("DB_NAME")
+dotenv_path = dotenv.find_dotenv()
+if dotenv_path:
+    dotenv.load_dotenv(dotenv_path)
+
+DB_ORIGINAL_NAME = os.environ["DB_NAME"]
 
 
 @contextmanager
@@ -43,8 +46,11 @@ def get_db_cursor(dbname: str = "postgres"):
 
 def pytest_configure(config):
     """Configure test environment before any imports."""
-    dotenv.set_key(dotenv.find_dotenv(), "DB_NAME", "kd-schedule-test")
-    dotenv.load_dotenv(override=True)
+    os.environ["DB_NAME"] = "kd-schedule-test"
+
+    if dotenv_path:
+        dotenv.set_key(dotenv_path, "DB_NAME", "kd-schedule-test")
+        dotenv.load_dotenv(dotenv_path, override=True)
 
     with get_db_cursor() as cur:
         cur.execute('DROP DATABASE IF EXISTS "kd-schedule-test"')
@@ -55,8 +61,14 @@ def pytest_configure(config):
 
 def pytest_unconfigure(config):
     """Clean up after tests."""
-    dotenv.set_key(dotenv.find_dotenv(), "DB_NAME", DB_ORIGINAL_NAME)
-    dotenv.load_dotenv(override=True)
+    if DB_ORIGINAL_NAME:
+        os.environ["DB_NAME"] = DB_ORIGINAL_NAME
+    else:
+        os.environ.pop("DB_NAME", None)
+
+    if dotenv_path and DB_ORIGINAL_NAME:
+        dotenv.set_key(dotenv_path, "DB_NAME", DB_ORIGINAL_NAME)
+        dotenv.load_dotenv(dotenv_path, override=True)
 
 
 @pytest.fixture(scope="module")
