@@ -78,7 +78,7 @@ class TestScheduleAPI:
     @staticmethod
     async def _create_schedule(
         client: AsyncClient, test_user: UserTest, test_medicine: MedicineTest, use_end_time: bool
-    ) -> dict[str, str]:
+    ) -> str:
         payload = {
             "name": test_user.name,
             "medicine_policy": test_user.medicine_policy,

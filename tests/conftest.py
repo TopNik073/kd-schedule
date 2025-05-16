@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 import os
+import dotenv
 
 import psycopg2
 import pytest
@@ -10,8 +11,9 @@ from alembic.config import Config
 from tests.models import MedicineTest, UserTest
 
 alembic_cfg = Config("alembic.ini")
-DB_ORIGINAL_NAME = os.environ["DB_NAME"]
 
+dotenv.load_dotenv()
+DB_ORIGINAL_NAME = os.getenv("DB_NAME")
 
 @contextmanager
 def get_db_connection(dbname: str = "postgres"):
@@ -40,7 +42,8 @@ def get_db_cursor(dbname: str = "postgres"):
 
 def pytest_configure(config):
     """Configure test environment before any imports."""
-    os.environ["DB_NAME"] = "kd-schedule-test"
+    dotenv.set_key(dotenv.find_dotenv(), "DB_NAME", "kd-schedule-test")
+    dotenv.load_dotenv(override=True)
 
     with get_db_cursor() as cur:
         cur.execute('DROP DATABASE IF EXISTS "kd-schedule-test"')
@@ -51,7 +54,8 @@ def pytest_configure(config):
 
 def pytest_unconfigure(config):
     """Clean up after tests."""
-    os.environ["DB_NAME"] = DB_ORIGINAL_NAME
+    dotenv.set_key(dotenv.find_dotenv(), "DB_NAME", DB_ORIGINAL_NAME)
+    dotenv.load_dotenv(override=True)
 
 
 @pytest.fixture(scope="module")
